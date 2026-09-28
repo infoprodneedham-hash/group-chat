@@ -9,8 +9,9 @@
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         
         :root {
-            --term-green: #00ff00;
-            --term-black: #000000;
+            --term-green: #39ff14; /* True neon green */
+            --term-black: #050505;
+            --term-red: #ff3333;
         }
 
         body {
@@ -36,6 +37,7 @@
             outline: none;
             width: 100%;
             caret-color: var(--term-green);
+            transition: border-width 0.1s;
         }
 
         input:focus {
@@ -59,12 +61,15 @@
             color: var(--term-black);
         }
 
+        button:active {
+            transform: scale(0.98);
+        }
+
         .hide {
             display: none !important;
         }
 
-        /* Custom Scrollbar for message log */
-        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar { width: 12px; }
         ::-webkit-scrollbar-track { background: var(--term-black); border-left: 1px solid var(--term-green); }
         ::-webkit-scrollbar-thumb { background: var(--term-green); }
 
@@ -74,33 +79,39 @@
         @keyframes blink-animation {
             to { visibility: hidden; }
         }
+        
+        .sys-error {
+            color: var(--term-red);
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto w-full h-full flex flex-col border-2 border-[#00ff00] p-4">
+    <div class="max-w-4xl mx-auto w-full h-full flex flex-col border-2 border-[#39ff14] p-4 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
         
-        <header class="border-b border-[#00ff00] pb-2 mb-4">
-            <h1 class="text-4xl uppercase m-0 leading-none tracking-widest">SYS_COMM_LINK</h1>
+        <header class="border-b border-[#39ff14] pb-2 mb-4">
+            <h1 class="text-4xl uppercase m-0 leading-none tracking-widest">> SYS_COMM_LINK_V2</h1>
         </header>
 
+        <!-- Boot Screen -->
         <main id="boot-screen" class="flex-1 flex flex-col justify-center items-center text-center">
             <div class="space-y-4">
-                <div>> INITIALIZING SYSTEM...</div>
-                <div>> ESTABLISHING SECURE CONNECTION...</div>
+                <div>> INITIALIZING NETWORK PROTOCOLS...</div>
+                <div>> AUTHENTICATING CONNECTION...</div>
                 <div class="blink">_</div>
             </div>
         </main>
 
+        <!-- Lobby Screen -->
         <main id="lobby-screen" class="hide flex-1 flex flex-col justify-center max-w-lg mx-auto w-full space-y-8">
             <div class="space-y-2">
-                <label class="block uppercase">> ENTER_OPERATOR_NAME</label>
+                <label class="block uppercase">> ENTER_OPERATOR_TAG</label>
                 <input type="text" id="username-input" placeholder="e.g. NEO" maxlength="12" autocomplete="off">
             </div>
 
-            <div class="border-t border-dashed border-[#00ff00] pt-8 space-y-6">
+            <div class="border-t border-dashed border-[#39ff14] pt-8 space-y-6">
                 <button id="btn-create" class="w-full">
-                    [ CREATE_NEW_ROOM ]
+                    [ INITIATE_NEW_ROOM ]
                 </button>
                 
                 <div class="text-center">-- OR --</div>
@@ -111,14 +122,15 @@
                         [ JOIN ]
                     </button>
                 </div>
-                <div id="lobby-error" class="text-red-500 text-sm hide">> ERROR: INVALID INPUT</div>
+                <div id="lobby-error" class="sys-error text-lg hide">> ERROR: INVALID INPUT</div>
             </div>
         </main>
 
+        <!-- Chat Screen -->
         <main id="chat-screen" class="hide flex-1 flex flex-col overflow-hidden">
-            <div class="flex justify-between border-b border-dashed border-[#00ff00] pb-2 mb-4 uppercase">
-                <div id="chat-info">OPERATOR: ??? | ROOM: ???</div>
-                <button id="btn-disconnect" class="text-sm py-1 px-2">DISCONNECT</button>
+            <div class="flex justify-between items-center border-b border-dashed border-[#39ff14] pb-2 mb-4 uppercase">
+                <div id="chat-info" class="text-xl">OP: ??? | RM: ???</div>
+                <button id="btn-disconnect" class="text-sm py-1 px-3">ABORT</button>
             </div>
 
             <div id="message-log" class="flex-1 overflow-y-auto flex flex-col space-y-2 mb-4 pb-2 pr-2">
@@ -126,9 +138,9 @@
             </div>
 
             <form id="chat-form" class="flex items-center space-x-4 mt-auto">
-                <span class="mb-1 text-2xl">></span>
-                <input type="text" id="chat-input" placeholder="TYPE TRANSMISSION..." autocomplete="off">
-                <button type="submit" id="btn-send">SEND</button>
+                <span class="mb-1 text-3xl">></span>
+                <input type="text" id="chat-input" placeholder="TYPE TRANSMISSION HERE..." autocomplete="off">
+                <button type="submit" id="btn-send" class="px-6">SEND</button>
             </form>
         </main>
 
@@ -139,8 +151,8 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Variables from Environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'terminal-chat-app';
+        // Extract globals safely
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'retro-terminal-app';
         let firebaseConfig = {};
         let customToken = null;
         
@@ -148,12 +160,10 @@
             if (typeof __firebase_config !== 'undefined') firebaseConfig = JSON.parse(__firebase_config);
             if (typeof __initial_auth_token !== 'undefined') customToken = __initial_auth_token;
         } catch(e) {
-            console.error("Config parse error. Ensure environment variables are set.", e);
+            console.error("Config parse error.", e);
         }
 
         let app, auth, db;
-
-        // App State
         let currentUser = null;
         let myUsername = "";
         let currentRoom = "";
@@ -178,29 +188,14 @@
         const chatInput = document.getElementById('chat-input');
 
         async function bootSystem() {
-            // 5-second failsafe timeout to prevent infinite loading screen
-            bootTimeout = setTimeout(() => {
-                if (!currentUser) {
-                    console.warn("System boot timeout. Forcing lobby entry.");
-                    bootScreen.classList.add('hide');
-                    lobbyScreen.classList.remove('hide');
-                    showError("SYS_TIMEOUT: DB CONNECTION HUNG. OFFLINE MODE.");
-                    usernameInput.focus();
-                }
-            }, 5000);
-
             try {
-                // Initialize Firebase securely inside try-catch
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Listen for Auth State
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        clearTimeout(bootTimeout);
                         currentUser = user;
-                        // Reveal interactive lobby only after Auth is confirmed
                         bootScreen.classList.add('hide');
                         lobbyScreen.classList.remove('hide');
                         usernameInput.focus();
@@ -214,11 +209,7 @@
                 }
             } catch (err) {
                 console.error("Auth/Init Error:", err);
-                clearTimeout(bootTimeout);
-                bootScreen.classList.add('hide');
-                lobbyScreen.classList.remove('hide');
-                showError("FATAL: INITIALIZATION FAILED. OFFLINE MODE.");
-                usernameInput.focus();
+                bootScreen.innerHTML = `<div class="sys-error">> FATAL ERROR: NETWORK CONNECTION FAILED.<br>> ${err.message}</div>`;
             }
         }
 
@@ -234,30 +225,23 @@
             lobbyError.classList.add('hide');
         });
 
-        btnCreate.addEventListener('click', () => {
+        btnCreate.addEventListener('click', (e) => {
+            e.preventDefault();
             const name = usernameInput.value.trim();
-            if (!name) {
-                showError("OPERATOR NAME REQUIRED");
-                return;
-            }
+            if (!name) return showError("OPERATOR TAG REQUIRED");
+            
             myUsername = name;
-            // Generate 6 digit code
             currentRoom = Math.floor(100000 + Math.random() * 900000).toString();
             enterChat();
         });
 
-        btnJoin.addEventListener('click', () => {
+        btnJoin.addEventListener('click', (e) => {
+            e.preventDefault();
             const name = usernameInput.value.trim();
             const code = joinCodeInput.value.trim();
             
-            if (!name) {
-                showError("OPERATOR NAME REQUIRED");
-                return;
-            }
-            if (code.length !== 6) {
-                showError("CODE MUST BE 6 DIGITS");
-                return;
-            }
+            if (!name) return showError("OPERATOR TAG REQUIRED");
+            if (code.length !== 6) return showError("ROOM CODE MUST BE 6 DIGITS");
 
             myUsername = name;
             currentRoom = code;
@@ -273,10 +257,14 @@
             lobbyScreen.classList.add('hide');
             chatScreen.classList.remove('hide');
             
-            chatInfo.textContent = `OPERATOR: [${myUsername}] | ROOM: [${currentRoom}]`;
+            chatInfo.textContent = `OP: [${myUsername}] | RM: [${currentRoom}]`;
             chatInput.focus();
             
-            messageLog.innerHTML = `<div class="opacity-70 italic">> ROOM [${currentRoom}] SECURED. AWAITING TRANSMISSIONS...</div>`;
+            messageLog.innerHTML = `
+                <div class="opacity-70 italic">> LINK ESTABLISHED.</div>
+                <div class="opacity-70 italic">> ROOM CODE: ${currentRoom}</div>
+                <div class="opacity-70 italic mb-4">> AWAITING INCOMING TRANSMISSIONS...</div>
+            `;
             
             startSync();
         }
@@ -284,10 +272,8 @@
         function startSync() {
             if (!currentUser || !currentRoom) return;
 
-            // Strict Rule 1: Exact Public Path
-            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_comms');
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'retro_messages');
 
-            // Strict Rule 2: Fetch all, filter in memory
             unsubscribe = onSnapshot(messagesRef, (snapshot) => {
                 const msgs = [];
                 snapshot.forEach(doc => {
@@ -297,55 +283,80 @@
                     }
                 });
 
-                // Sort in memory by time
+                // Sort ascending by timestamp
                 msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                renderMessages(msgs);
+                
+                // Keep the header instructions and append all messages
+                messageLog.innerHTML = `
+                    <div class="opacity-70 italic">> LINK ESTABLISHED.</div>
+                    <div class="opacity-70 italic mb-4">> ROOM CODE: [ ${currentRoom} ]</div>
+                `;
+                
+                msgs.forEach(msg => {
+                    const el = document.createElement('div');
+                    const time = new Date(msg.timestamp).toLocaleTimeString([], { hour12: false });
+                    
+                    if (msg.sender === myUsername) {
+                        el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> YOU:</strong> ${escapeHtml(msg.text)}`;
+                    } else {
+                        el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> ${escapeHtml(msg.sender)}:</strong> ${escapeHtml(msg.text)}`;
+                    }
+                    messageLog.appendChild(el);
+                });
+                
+                // Scroll to bottom
+                messageLog.scrollTop = messageLog.scrollHeight;
 
             }, (error) => {
                 console.error("Sync Error:", error);
-                messageLog.innerHTML += `<div class="text-red-500">> CONNECTION LOST.</div>`;
+                const errDiv = document.createElement('div');
+                errDiv.className = 'sys-error';
+                errDiv.textContent = `> SYNC LOST: ${error.message}`;
+                messageLog.appendChild(errDiv);
             });
-        }
-
-        function renderMessages(msgs) {
-            // Keep intro message
-            messageLog.innerHTML = `<div class="opacity-70 italic mb-4">> ROOM [${currentRoom}] SECURED. AWAITING TRANSMISSIONS...</div>`;
-            
-            msgs.forEach(msg => {
-                const el = document.createElement('div');
-                const time = new Date(msg.timestamp).toLocaleTimeString([], { hour12: false });
-                
-                if (msg.sender === myUsername) {
-                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> YOU:</strong> ${escapeHtml(msg.text)}`;
-                } else {
-                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> ${escapeHtml(msg.sender)}:</strong> ${escapeHtml(msg.text)}`;
-                }
-                
-                messageLog.appendChild(el);
-            });
-            
-            // Auto scroll to bottom
-            messageLog.scrollTop = messageLog.scrollHeight;
         }
 
         chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = chatInput.value.trim();
-            if (!text || !currentUser || !currentRoom) return;
+            // 1) Explicitly prevent default form submission
+            e.preventDefault(); 
             
+            const text = chatInput.value.trim();
+            if (!text) return; // Don't send empty messages
+
+            // Instantly clear and refocus
             chatInput.value = ""; 
             chatInput.focus();
 
+            // Safety check
+            if (!currentUser || !currentRoom) {
+                const errDiv = document.createElement('div');
+                errDiv.className = 'sys-error';
+                errDiv.textContent = `> TRANSMISSION FAILED: SYSTEM OFFLINE.`;
+                messageLog.appendChild(errDiv);
+                return;
+            }
+
             try {
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_comms');
+                // 3) Write message object to Firestore
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'retro_messages');
                 await addDoc(messagesRef, {
                     roomCode: currentRoom,
                     sender: myUsername,
                     text: text,
                     timestamp: Date.now()
                 });
+                
+                console.log("Transmission sent successfully.");
+                // Note: onSnapshot listener automatically picks this up and renders it instantly.
+
             } catch (err) {
-                console.error("Send error:", err);
+                // 5) Explicit console error and on-screen rendering if dispatch fails
+                console.error("Message Dispatch Failed:", err);
+                const errDiv = document.createElement('div');
+                errDiv.className = 'sys-error';
+                errDiv.textContent = `> ERROR TRANSMITTING: ${err.message}`;
+                messageLog.appendChild(errDiv);
+                messageLog.scrollTop = messageLog.scrollHeight;
             }
         });
 
