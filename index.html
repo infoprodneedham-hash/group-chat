@@ -1,597 +1,467 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS_CHAT // SECURE PROTOCOL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL CHAT // OS_V1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        cyber: {
-                            bg: '#0a0b10', card: '#121520', border: '#1f293d',
-                            cyan: '#00f0ff', magenta: '#ff007f', green: '#00ff66',
-                            yellow: '#fcee0a', darker: '#050608'
-                        }
-                    },
-                    fontFamily: {
-                        tech: ['"Share Tech Mono"', 'monospace'],
-                        orbitron: ['"Orbitron"', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            background-color: #0a0b10; color: #e2e8f0; font-family: 'Share Tech Mono', monospace;
-            overflow-x: hidden;
+        :root {
+            --term-green: #33ff00;
+            --term-dark: #051405;
+            --term-glow: 0 0 8px rgba(51, 255, 0, 0.6);
         }
-        /* CRT Scanline Effect Overlay */
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
-            background-size: 100% 4px; z-index: 9999; opacity: 0.35;
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: #000;
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            font-size: 1.2rem;
         }
-        /* Geometric Grid Background */
-        .cyber-grid {
-            background-image: 
-                linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
-            background-size: 30px 30px;
+
+        /* CRT Effects */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
         }
-        /* Custom Neon Borders and Glows */
-        .neon-glow-cyan {
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
-            border: 1px solid #00f0ff;
+
+        .crt-vignette {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 49;
         }
-        .neon-glow-magenta {
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.08);
-            border: 1px solid #ff007f;
+
+        /* Terminal Text Styling */
+        .term-text {
+            text-shadow: var(--term-glow);
         }
-        .neon-text-cyan { text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 16px rgba(0, 240, 255, 0.4); }
-        .neon-text-magenta { text-shadow: 0 0 8px rgba(255, 0, 127, 0.8), 0 0 16px rgba(255, 0, 127, 0.4); }
-        
-        /* Thematic Scrollbars */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0b10; }
-        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+
+        .term-input {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            outline: none;
+            box-shadow: none;
+            text-shadow: var(--term-glow);
+            caret-color: var(--term-green);
+            width: 100%;
+        }
+
+        .term-input:focus {
+            outline: none;
+        }
+
+        /* Blinking Cursor */
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--term-dark); border-left: 1px solid var(--term-green); }
+        ::-webkit-scrollbar-thumb { background: var(--term-green); }
+
+        /* Interactive Elements */
+        .term-btn {
+            border: 1px solid var(--term-green);
+            background: transparent;
+            color: var(--term-green);
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: var(--term-glow);
+        }
+        .term-btn:hover:not(:disabled) {
+            background: var(--term-green);
+            color: #000;
+        }
+        .term-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        /* Selection */
+        ::selection {
+            background: var(--term-green);
+            color: #000;
+        }
     </style>
 </head>
-<body class="cyber-grid min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
-    <div class="scanlines"></div>
-    <div id="toast-container" class="fixed top-4 right-4 z-[9000] flex flex-col space-y-2 pointer-events-none"></div>
+<body class="p-4 sm:p-8 flex flex-col items-center justify-center">
+    
+    <div class="crt-overlay"></div>
+    <div class="crt-vignette"></div>
 
-    <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 max-w-5xl mx-auto w-full relative z-10">
-        <div class="text-center mb-10 w-full">
-            <div id="cloud-status-badge" class="inline-flex items-center space-x-2 px-3 py-1 mb-3 text-xs font-bold tracking-widest text-yellow-400 bg-yellow-400/10 rounded border border-yellow-400/30 transition-colors duration-300">
-                <span class="w-2 h-2 bg-yellow-400 rounded-full animate-ping" id="cloud-status-dot"></span>
-                <span id="cloud-status-text">INITIALIZING FIREBASE SDK...</span>
+    <div class="w-full max-w-4xl h-full flex flex-col relative z-10 border-2 border-[var(--term-green)] bg-[var(--term-dark)] p-4 shadow-[0_0_15px_rgba(51,255,0,0.3)]">
+        
+        <!-- Header -->
+        <div class="border-b border-[var(--term-green)] pb-2 mb-4 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl sm:text-4xl term-text uppercase leading-none">SYS_COMM_LINK_v2.0</h1>
+                <div class="text-sm opacity-80" id="connection-status">STATUS: INITIALIZING KERNEL...</div>
             </div>
-            <h1 class="font-orbitron text-3xl sm:text-5xl font-black tracking-wider text-cyber-cyan neon-text-cyan uppercase">
-                NEXUS_CHAT <span class="text-cyber-magenta font-light">// 8.5</span>
-            </h1>
-            <p class="text-gray-400 text-sm sm:text-base mt-2 font-tech tracking-wider">
-                CROSS-DEVICE SQUAD COMMS
-            </p>
+            <div class="text-right hidden sm:block">
+                <div class="animate-pulse">_REC</div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-            <!-- CREATE SQUAD CARD -->
-            <div class="bg-cyber-card neon-glow-cyan p-6 sm:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden group">
-                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl transition-all pointer-events-none"></div>
-                <div>
-                    <div class="flex items-center justify-between mb-6 pointer-events-none">
-                        <div class="p-3 bg-cyber-cyan/10 rounded-lg text-cyber-cyan neon-glow-cyan">
-                            <i class="fa-solid fa-shield-halved text-2xl"></i>
-                        </div>
-                        <span class="text-xs font-orbitron text-cyber-cyan tracking-widest">PROTOCOL 01</span>
-                    </div>
-                    <h2 class="font-orbitron text-xl font-bold text-cyber-cyan mb-2">CREATE SQUAD</h2>
-                    <p class="text-xs text-gray-400 mb-6 font-tech">Initialize a new secure 6-digit channel.</p>
-                    
-                    <div class="space-y-4 relative z-20 pointer-events-auto">
-                        <div>
-                            <label class="block text-xs font-orbitron text-gray-300 mb-2">GAMER TAG</label>
-                            <input type="text" id="create-gamer-tag" placeholder="e.g. CyberNinja99" maxlength="20" autocomplete="off"
-                                class="w-full bg-cyber-darker border border-cyber-border rounded px-4 py-3 text-cyber-cyan font-tech focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition">
-                        </div>
+        <div id="setup-screen" class="flex-1 flex flex-col justify-center items-center space-y-8">
+            <div class="w-full max-w-md space-y-6">
+                <div class="text-center mb-8">
+                    <pre class="text-[0.6rem] sm:text-xs leading-tight mb-4 term-text">
+  ___  _   _  ___  ____ 
+ / _ \| \ | |/ _ \|  _ \
+| | | |  \| | | | | | | |
+| |_| | |\  | |_| | |_| |
+ \___/|_| \_|\___/|____/ 
+                    </pre>
+                    <p class="uppercase">Identify yourself to the mainframe.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block uppercase text-sm">> ENTER_USERNAME</label>
+                    <div class="flex items-center border border-[var(--term-green)] p-2 bg-black">
+                        <span class="mr-2">USR:</span>
+                        <input type="text" id="username-input" class="term-input uppercase" autocomplete="off" spellcheck="false" maxlength="12">
                     </div>
                 </div>
-                <div class="mt-8 relative z-20 pointer-events-auto">
-                    <button id="create-squad-btn" type="button" disabled class="w-full py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-cyan flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-wait">
-                        <span>INITIALIZE SQUAD</span>
-                        <i class="fa-solid fa-terminal"></i>
+
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <button id="btn-create-room" class="term-btn py-3 disabled:opacity-30" disabled>
+                        [ CREATE_NODE ]
                     </button>
+                    <button id="btn-show-join" class="term-btn py-3 disabled:opacity-30" disabled>
+                        [ JOIN_NODE ]
+                    </button>
+                </div>
+
+                <div id="join-section" class="hidden mt-6 p-4 border border-dashed border-[var(--term-green)] space-y-4">
+                    <label class="block uppercase text-sm">> ENTER_6_DIGIT_NODE_ID</label>
+                    <div class="flex items-center border border-[var(--term-green)] p-2 bg-black">
+                        <span class="mr-2">ID:</span>
+                        <input type="text" id="room-code-input" class="term-input uppercase tracking-[0.5em]" maxlength="6" autocomplete="off" placeholder="______">
+                    </div>
+                    <button id="btn-submit-join" class="term-btn py-2 w-full">
+                        CONNECT =>
+                    </button>
+                    <div id="join-error" class="text-red-500 text-sm hidden uppercase">ERROR: INVALID NODE ID</div>
                 </div>
             </div>
+        </div>
 
-            <!-- JOIN SQUAD CARD -->
-            <div class="bg-cyber-card neon-glow-magenta p-6 sm:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden group">
-                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-magenta/5 rounded-full blur-2xl transition-all pointer-events-none"></div>
-                <div>
-                    <div class="flex items-center justify-between mb-6 pointer-events-none">
-                        <div class="p-3 bg-cyber-magenta/10 rounded-lg text-cyber-magenta neon-glow-magenta">
-                            <i class="fa-solid fa-satellite-dish text-2xl"></i>
-                        </div>
-                        <span class="text-xs font-orbitron text-cyber-magenta tracking-widest">PROTOCOL 02</span>
-                    </div>
-                    <h2 class="font-orbitron text-xl font-bold text-cyber-magenta mb-2">JOIN SQUAD</h2>
-                    <p class="text-xs text-gray-400 mb-6 font-tech">Enter a 6-digit frequency code to establish link.</p>
-                    
-                    <div class="space-y-4 relative z-20 pointer-events-auto">
-                        <div>
-                            <label class="block text-xs font-orbitron text-gray-300 mb-2">GAMER TAG</label>
-                            <input type="text" id="join-gamer-tag" placeholder="e.g. NeonValkyrie" maxlength="20" autocomplete="off"
-                                class="w-full bg-cyber-darker border border-cyber-border rounded px-4 py-3 text-cyber-magenta font-tech focus:outline-none focus:border-cyber-magenta focus:ring-1 focus:ring-cyber-magenta transition">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-orbitron text-gray-300 mb-2">6-DIGIT ROOM CODE</label>
-                            <input type="text" id="join-room-code" placeholder="e.g. 749201" maxlength="6" autocomplete="off"
-                                class="w-full bg-cyber-darker border border-cyber-border rounded px-4 py-3 text-cyber-magenta font-tech tracking-widest text-center text-xl focus:outline-none focus:border-cyber-magenta focus:ring-1 focus:ring-cyber-magenta transition uppercase">
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-8 relative z-20 pointer-events-auto">
-                    <button id="join-squad-btn" type="button" disabled class="w-full py-3 bg-cyber-magenta/20 hover:bg-cyber-magenta text-cyber-magenta hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-magenta flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-wait">
-                        <span>ESTABLISH LINK</span>
-                        <i class="fa-solid fa-plug"></i>
-                    </button>
-                </div>
+        <div id="chat-screen" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+            <div class="flex justify-between items-center mb-2 bg-[var(--term-green)] text-black px-2 py-1 font-bold uppercase">
+                <span id="active-user-display">USR: UNKNOWN</span>
+                <span>NODE: <span id="active-room-display" class="tracking-widest">000000</span></span>
+                <button id="btn-disconnect" class="hover:bg-black hover:text-[var(--term-green)] px-2 transition-colors border border-black">DISCONNECT_</button>
+            </div>
+
+            <!-- Messages Box -->
+            <div id="message-log" class="flex-1 overflow-y-auto p-2 font-mono flex flex-col space-y-1 pb-4">
+                <div class="opacity-70 italic">> COMM LINK ESTABLISHED. WAITING FOR TRANSMISSIONS...</div>
+            </div>
+
+            <!-- Input Box -->
+            <div class="border-t border-[var(--term-green)] pt-3 mt-2 flex items-start group">
+                <span class="mr-2 mt-0.5 whitespace-nowrap" id="prompt-prefix">user@node></span>
+                <form id="message-form" class="flex-1 flex w-full">
+                    <input type="text" id="chat-input" class="term-input" autocomplete="off" spellcheck="false" placeholder="Type transmission...">
+                    <button type="submit" class="hidden">Send</button>
+                </form>
+                <span class="cursor-blink inline-block w-2.5 h-5 bg-[var(--term-green)] ml-1"></span>
             </div>
         </div>
         
-        <div class="mt-8 text-xs text-gray-500 font-tech flex justify-between w-full max-w-4xl px-4 pointer-events-none">
-            <span id="client-uuid">STATUS: WAITING FOR CLOUD...</span>
-        </div>
     </div>
-
-    <div id="chat-screen" class="flex-1 flex flex-col h-screen hidden relative z-10">
-        <!-- Chat Header -->
-        <header class="bg-cyber-card border-b border-cyber-border px-4 py-3 flex flex-wrap items-center justify-between gap-4 relative z-50">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2 hidden sm:flex pointer-events-none">
-                    <span class="w-3 h-3 bg-cyber-green rounded-full animate-ping"></span>
-                    <span class="font-orbitron text-xs font-bold text-cyber-green neon-text-cyan">LINK ACTIVE</span>
-                </div>
-                <div class="h-5 w-[1px] bg-cyber-border hidden sm:block"></div>
-                <div class="flex items-center space-x-2 bg-cyber-darker px-3 py-1.5 rounded border border-cyber-border pointer-events-auto">
-                    <span class="text-xs text-gray-400 font-orbitron">FREQ:</span>
-                    <span id="display-room-code" class="text-cyber-cyan font-bold tracking-widest text-sm md:text-base">------</span>
-                    <button id="copy-code-btn" type="button" class="text-gray-400 hover:text-cyber-cyan ml-2 transition px-2 py-1">
-                        <i class="fa-solid fa-copy"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4 pointer-events-auto">
-                <div class="text-xs font-tech text-gray-400 hidden md:block">
-                    OP: <span id="display-gamer-tag" class="text-cyber-magenta font-bold uppercase"></span>
-                </div>
-                <button id="disconnect-btn" type="button" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-orbitron text-xs font-bold rounded border border-red-500/40 transition flex items-center space-x-2 shadow-lg">
-                    <i class="fa-solid fa-power-off"></i>
-                    <span class="hidden sm:inline">DISCONNECT</span>
-                </button>
-            </div>
-        </header>
-
-        <div class="flex-1 flex overflow-hidden relative">
-            <!-- Sidebar / Squad Roster -->
-            <aside id="sidebar" class="w-64 bg-cyber-card/95 backdrop-blur-md border-r border-cyber-border flex flex-col absolute md:relative z-40 inset-y-0 left-0 transition-transform duration-300 -translate-x-full md:translate-x-0">
-                <div class="p-4 border-b border-cyber-border flex items-center justify-between">
-                    <h3 class="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center space-x-2">
-                        <i class="fa-solid fa-users"></i>
-                        <span>SQUAD (<span id="roster-count">0</span>)</span>
-                    </h3>
-                    <button id="sidebar-close-btn" class="md:hidden text-gray-400 hover:text-white pointer-events-auto p-2"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div id="roster-list" class="flex-1 overflow-y-auto p-4 space-y-3 font-tech text-sm pb-20">
-                    <!-- Dynamic Roster list populated by Firebase -->
-                </div>
-            </aside>
-
-            <!-- Mobile Sidebar Toggle -->
-            <button id="sidebar-toggle-btn" class="md:hidden absolute top-4 left-4 z-30 p-2 bg-cyber-card border border-cyber-cyan text-cyber-cyan rounded shadow-lg pointer-events-auto">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-
-            <!-- Main Chat Area -->
-            <main class="flex-1 flex flex-col bg-cyber-bg overflow-hidden relative z-20">
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 font-tech pb-4">
-                    <!-- Dynamic Messages populated by Firebase -->
-                </div>
-                
-                <!-- Chat Input Form -->
-                <div class="p-3 sm:p-4 bg-cyber-card border-t border-cyber-border relative z-50 pointer-events-auto shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
-                    <form id="chat-form" class="flex items-center space-x-2 max-w-4xl mx-auto">
-                        <div class="relative flex-1">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-cyber-cyan">
-                                <i class="fa-solid fa-terminal text-xs"></i>
-                            </span>
-                            <input type="text" id="message-input" placeholder="Enter transmission..." autocomplete="off"
-                                class="w-full bg-cyber-darker border border-cyber-border rounded pl-9 pr-4 py-3 text-sm text-gray-100 font-tech focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition">
-                        </div>
-                        <button type="submit" class="px-4 sm:px-6 py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-xs rounded transition duration-200 neon-glow-cyan flex items-center space-x-2 shrink-0">
-                            <span class="hidden sm:inline">TRANSMIT</span>
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <script>
-        // UI Toast Notification Utility
-        window.showToast = function(title, message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const borderColor = type === 'error' ? 'border-red-500 text-red-400 bg-red-500/10' : 'border-cyber-cyan text-cyber-cyan bg-cyber-cyan/10';
-            const icon = type === 'error' ? 'fa-triangle-exclamation text-red-500' : 'fa-circle-check text-cyber-cyan';
-            toast.className = `backdrop-blur-md ${borderColor} border px-4 py-3 rounded-lg shadow-lg font-tech text-xs max-w-sm w-full pointer-events-auto transition-opacity duration-300 flex items-start space-x-3`;
-            toast.innerHTML = `<i class="fa-solid ${icon} mt-0.5"></i><div class="flex-1"><div class="font-orbitron font-bold">${title}</div><div class="text-gray-300 mt-0.5 break-words">${message}</div></div>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4500);
-        };
-
-        // UI Status Updater
-        window.updateCloudStatus = function(statusText, textColorClass, dotColorClass, bgClass) {
-            const badge = document.getElementById('cloud-status-badge');
-            const dot = document.getElementById('cloud-status-dot');
-            const text = document.getElementById('cloud-status-text');
-            if (!badge || !dot || !text) return;
-            badge.className = `inline-flex items-center space-x-2 px-3 py-1 mb-3 text-xs font-bold tracking-widest ${textColorClass} ${bgClass} rounded border border-current transition-colors duration-300`;
-            dot.className = `w-2 h-2 ${dotColorClass} rounded-full animate-ping`;
-            text.textContent = statusText;
-        };
-
-        // XSS Prevention for user inputs
-        window.escapeHtml = function(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        };
-
-        // Code Generator
-        window.generateCode = function() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        };
-    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global State variables
-        let db = null;
-        let auth = null;
+        /* --- STATE --- */
         let currentUser = null;
+        let username = "";
+        let roomCode = "";
         let unsubscribeMessages = null;
-        let unsubscribeRoom = null;
-        let currentRoomCode = null;
-        let currentGamerTag = '';
+
+        /* --- DOM ELEMENTS --- */
+        const statusEl = document.getElementById('connection-status');
+        const setupScreen = document.getElementById('setup-screen');
+        const chatScreen = document.getElementById('chat-screen');
         
-        // STANDARD FIREBASE INITIALIZATION 
-        // Using exact variable identifiers provided by the environment injection
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat';
+        const usernameInput = document.getElementById('username-input');
+        const btnCreateRoom = document.getElementById('btn-create-room');
+        const btnShowJoin = document.getElementById('btn-show-join');
         
-        // Safely extract the injected environment JSON configuration string
+        const joinSection = document.getElementById('join-section');
+        const roomCodeInput = document.getElementById('room-code-input');
+        const btnSubmitJoin = document.getElementById('btn-submit-join');
+        const joinError = document.getElementById('join-error');
+        
+        const activeUserDisplay = document.getElementById('active-user-display');
+        const activeRoomDisplay = document.getElementById('active-room-display');
+        const btnDisconnect = document.getElementById('btn-disconnect');
+        const promptPrefix = document.getElementById('prompt-prefix');
+        
+        const messageLog = document.getElementById('message-log');
+        const messageForm = document.getElementById('message-form');
+        const chatInput = document.getElementById('chat-input');
+
+        /* --- FIREBASE INIT --- */
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'terminal-chat-v1';
         let firebaseConfig = {};
-        if (typeof __firebase_config !== 'undefined') {
-            try {
-                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-            } catch(e) {
-                console.error("Critical: Failed to parse native __firebase_config", e);
-            }
-        }
-        
-        const customToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        let customToken = null;
 
         try {
-            console.log("Initializing Firebase application...");
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            // Initiate Authentication Sequence before unlocking the UI
-            window.updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400', 'bg-yellow-400/10');
-            
-            if (customToken) {
-                signInWithCustomToken(auth, customToken).catch(e => {
-                    console.warn(`Custom Token Auth Failed, falling back to Anon:`, e);
-                    signInAnonymously(auth);
-                });
-            } else {
-                signInAnonymously(auth).catch(e => console.error(`Anon Auth Failed:`, e));
-            }
+            if (typeof __firebase_config !== 'undefined') firebaseConfig = JSON.parse(__firebase_config);
+            if (typeof __initial_auth_token !== 'undefined') customToken = __initial_auth_token;
+        } catch (e) {
+            console.error("SYS_ERR: ENV PARSE FAILED", e);
+        }
 
-            // Listen for Auth State changes to ensure the database can be accessed safely
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    document.getElementById('client-uuid').textContent = `SECURE ID: ${user.uid}`;
-                    window.updateCloudStatus('CLOUD CONNECTED (SYNC ACTIVE)', 'text-cyber-green', 'bg-cyber-green', 'bg-cyber-green/10');
-                    
-                    // Enable UI Buttons since Firebase is ready
-                    document.getElementById('create-squad-btn').disabled = false;
-                    document.getElementById('create-squad-btn').classList.remove('cursor-wait');
-                    document.getElementById('join-squad-btn').disabled = false;
-                    document.getElementById('join-squad-btn').classList.remove('cursor-wait');
-                    console.log(`Authenticated securely as ${user.uid}`);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        /* --- AUTHENTICATION --- */
+        async function connectToMainframe() {
+            try {
+                statusEl.textContent = "STATUS: AUTHENTICATING WITH MAINFRAME...";
+                if (customToken) {
+                    await signInWithCustomToken(auth, customToken);
                 } else {
-                    currentUser = null;
-                    document.getElementById('client-uuid').textContent = `OFFLINE`;
-                    window.updateCloudStatus('LINK SEVERED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
-                    document.getElementById('create-squad-btn').disabled = true;
-                    document.getElementById('join-squad-btn').disabled = true;
+                    await signInAnonymously(auth);
                 }
-            });
-
-        } catch (initErr) {
-            console.error(`Firebase Core Init Failed:`, initErr);
-            window.updateCloudStatus('FIREBASE INIT FAILED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
-            window.showToast('SYSTEM HALT', 'Native Firebase configuration could not be loaded.', 'error');
-        }
-
-        async function createSquad(e) {
-            e.preventDefault();
-            if (!currentUser || !db) return window.showToast('DENIED', 'Active cloud connection required.', 'error');
-            
-            const inputTag = document.getElementById('create-gamer-tag').value.trim();
-            if (!inputTag) return window.showToast('DENIED', 'Gamer Tag required.', 'error');
-
-            currentGamerTag = inputTag;
-            currentRoomCode = window.generateCode();
-            
-            try {
-                // strict paths for public data adherence
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
-                await setDoc(roomRef, {
-                    roomCode: currentRoomCode,
-                    createdAt: Date.now(),
-                    participants: [currentGamerTag]
-                });
-
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-                await addDoc(messagesRef, {
-                    roomCode: currentRoomCode,
-                    sender: 'SYSTEM',
-                    text: `Squad channel ${currentRoomCode} initialized by ${currentGamerTag}.`,
-                    timestamp: Date.now(),
-                    type: 'system'
-                });
-                
-                transitionToChat();
-            } catch (err) {
-                console.error(`Create Room Error:`, err);
-                window.showToast('DATABASE ERROR', err.message, 'error');
+            } catch (error) {
+                statusEl.textContent = "STATUS: AUTHENTICATION FAILED [ERR_01]";
+                statusEl.classList.add('text-red-500');
+                console.error(error);
             }
         }
 
-        async function joinSquad(e) {
-            e.preventDefault();
-            if (!currentUser || !db) return window.showToast('DENIED', 'Active cloud connection required.', 'error');
-
-            const inputTag = document.getElementById('join-gamer-tag').value.trim();
-            const inputCode = document.getElementById('join-room-code').value.trim().toUpperCase();
-            
-            if (!inputTag) return window.showToast('DENIED', 'Gamer Tag required.', 'error');
-            if (!inputCode || inputCode.length !== 6) return window.showToast('DENIED', 'Invalid 6-digit code.', 'error');
-
-            currentGamerTag = inputTag;
-            currentRoomCode = inputCode;
-            
-            try {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
-                const snap = await getDoc(roomRef);
-                
-                if (!snap.exists()) {
-                    return window.showToast('404 NOT FOUND', 'Invalid or inactive frequency code.', 'error');
-                }
-
-                // Add to roster if not already present
-                let parts = snap.data().participants || [];
-                if (!parts.includes(currentGamerTag)) {
-                    parts.push(currentGamerTag);
-                    await updateDoc(roomRef, { participants: parts });
-                }
-
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-                await addDoc(messagesRef, {
-                    roomCode: currentRoomCode,
-                    sender: 'SYSTEM',
-                    text: `${currentGamerTag} joined the squad.`,
-                    timestamp: Date.now(),
-                    type: 'system'
-                });
-                
-                transitionToChat();
-            } catch (err) {
-                console.error(`Join Error:`, err);
-                window.showToast('DATABASE ERROR', err.message, 'error');
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                statusEl.textContent = "STATUS: ONLINE // AWAITING USER INPUT";
+                validateUsername(); // Check if buttons should be enabled
             }
+        });
+
+        connectToMainframe();
+
+        /* --- UI LOGIC --- */
+        function validateUsername() {
+            const val = usernameInput.value.trim();
+            const isValid = val.length > 0 && currentUser !== null;
+            btnCreateRoom.disabled = !isValid;
+            btnShowJoin.disabled = !isValid;
         }
 
-        async function sendMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('message-input');
-            const text = input.value.trim();
-            
-            if (!text || !currentRoomCode || !db) return;
-            input.value = '';
+        usernameInput.addEventListener('input', () => {
+            // Force uppercase and remove spaces
+            usernameInput.value = usernameInput.value.toUpperCase().replace(/\s/g, '');
+            validateUsername();
+        });
 
-            const msgData = {
-                roomCode: currentRoomCode,
-                sender: currentGamerTag,
-                text: text,
-                timestamp: Date.now(),
-                type: 'chat'
-            };
+        // CREATE ROOM
+        btnCreateRoom.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            // Generate 6 digit code
+            roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+            enterChatRoom();
+        });
 
-            try {
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-                await addDoc(messagesRef, msgData);
-            } catch (err) {
-                console.error(`Send Msg Error:`, err);
-                window.showToast('TRANSMIT ERROR', err.message, 'error');
-            }
-        }
+        // SHOW JOIN SECTION
+        btnShowJoin.addEventListener('click', () => {
+            joinSection.classList.remove('hidden');
+            roomCodeInput.focus();
+        });
 
-        function transitionToChat() {
-            document.getElementById('lobby-screen').classList.add('hidden');
-            document.getElementById('chat-screen').classList.remove('hidden');
-            document.getElementById('display-room-code').textContent = currentRoomCode;
-            document.getElementById('display-gamer-tag').textContent = currentGamerTag;
-            document.getElementById('chat-messages').innerHTML = ''; 
-            
-            window.showToast('CONNECTION SUCCESS', `Linked to channel ${currentRoomCode}`);
-            startRealtimeSync();
-        }
+        roomCodeInput.addEventListener('input', () => {
+            roomCodeInput.value = roomCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            joinError.classList.add('hidden');
+        });
 
-        function startRealtimeSync() {
-            if (!currentRoomCode || !db) return;
-            console.log(`Starting real-time listener for room ${currentRoomCode}`);
-            
-            // Sync Roster
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
-            unsubscribeRoom = onSnapshot(roomRef, (snap) => {
-                if (snap.exists()) {
-                    renderRoster(snap.data().participants || []);
-                }
-            }, (error) => console.error(`Room Sync Failed:`, error));
-
-            // Sync Messages (Fetching all and filtering in-memory to strictly obey Rule 2: No Complex Queries)
-            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-            unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
-                let msgs = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.roomCode === currentRoomCode) msgs.push(data);
-                });
-                
-                // Sort chronologically in memory
-                msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                
-                document.getElementById('chat-messages').innerHTML = '';
-                msgs.forEach(m => appendMessageToUI(m, true));
-            }, (error) => console.error(`Messages Sync Failed:`, error));
-        }
-
-        function renderRoster(participants) {
-            const list = document.getElementById('roster-list');
-            document.getElementById('roster-count').textContent = participants.length;
-            list.innerHTML = '';
-
-            participants.forEach(tag => {
-                const isSelf = tag === currentGamerTag;
-                const div = document.createElement('div');
-                div.className = 'flex items-center space-x-2 p-2 rounded bg-cyber-darker border border-cyber-border truncate';
-                div.innerHTML = `
-                    <span class="w-2 h-2 bg-cyber-green rounded-full shrink-0"></span>
-                    <span class="truncate text-xs ${isSelf ? 'text-cyber-cyan font-bold' : 'text-gray-300'}">${window.escapeHtml(tag)} ${isSelf ? '(YOU)' : ''}</span>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function appendMessageToUI(msg, isBulk = false) {
-            const container = document.getElementById('chat-messages');
-            const isScrolled = container.scrollHeight - container.clientHeight <= container.scrollTop + 40;
-            
-            const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const div = document.createElement('div');
-            
-            if (msg.type === 'system') {
-                div.className = 'flex justify-center my-2';
-                div.innerHTML = `<span class="bg-cyber-darker border border-cyber-border px-3 py-1 rounded-full text-[10px] text-cyber-green font-tech uppercase tracking-widest break-words text-center max-w-[90%]">${window.escapeHtml(msg.text)}</span>`;
+        // SUBMIT JOIN
+        btnSubmitJoin.addEventListener('click', () => {
+            const code = roomCodeInput.value.trim();
+            if (code.length === 6) {
+                username = usernameInput.value.trim();
+                roomCode = code;
+                enterChatRoom();
             } else {
-                const isMe = msg.sender === currentGamerTag;
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-4`;
-                div.innerHTML = `
-                    <div class="flex items-center space-x-2 mb-1">
-                        <span class="text-[10px] font-orbitron font-bold ${isMe ? 'text-cyber-cyan' : 'text-cyber-magenta'} uppercase">${window.escapeHtml(msg.sender)}</span>
-                        <span class="text-[9px] text-gray-500">${timeStr}</span>
-                    </div>
-                    <div class="max-w-[85%] sm:max-w-[75%] px-4 py-2 text-sm font-tech leading-relaxed break-words shadow-lg ${isMe ? 'bg-cyber-cyan/10 border border-cyber-cyan/40 text-gray-100 rounded-lg rounded-tr-sm' : 'bg-cyber-card border border-cyber-border text-gray-200 rounded-lg rounded-tl-sm'}">
-                        ${window.escapeHtml(msg.text)}
-                    </div>
-                `;
+                joinError.classList.remove('hidden');
             }
-            container.appendChild(div);
+        });
+
+        /* --- CHAT LOGIC --- */
+        function enterChatRoom() {
+            setupScreen.classList.add('hidden');
+            chatScreen.classList.remove('hidden');
+            chatScreen.classList.add('flex');
             
-            if (isScrolled || !isBulk) {
-                setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
-            }
+            activeUserDisplay.textContent = `USR: ${username}`;
+            activeRoomDisplay.textContent = roomCode;
+            promptPrefix.textContent = `${username}@${roomCode}>`;
+            
+            chatInput.focus();
+            
+            // SYSTEM MESSAGE
+            appendSystemMessage(`JOINED NODE [${roomCode}] AS [${username}]`);
+            appendSystemMessage(`SECURE ENCRYPTION ACTIVE. ALL TRANSMISSIONS LOGGED.`);
+
+            startListening();
         }
 
-        async function disconnect() {
-            if (!currentRoomCode || !currentGamerTag || !db) return;
+        btnDisconnect.addEventListener('click', () => {
+            if (unsubscribeMessages) {
+                unsubscribeMessages();
+                unsubscribeMessages = null;
+            }
+            
+            setupScreen.classList.remove('hidden');
+            chatScreen.classList.add('hidden');
+            chatScreen.classList.remove('flex');
+            
+            // Reset
+            roomCode = "";
+            joinSection.classList.add('hidden');
+            roomCodeInput.value = "";
+            messageLog.innerHTML = '<div class="opacity-70 italic">> COMM LINK ESTABLISHED. WAITING FOR TRANSMISSIONS...</div>';
+            statusEl.textContent = "STATUS: ONLINE // AWAITING USER INPUT";
+        });
+
+        // SEND MESSAGE
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text || !currentUser || !roomCode) return;
+
+            chatInput.value = ""; // Clear input immediately for responsiveness
 
             try {
-                // Remove self from roster
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
-                const snap = await getDoc(roomRef);
-                if (snap.exists()) {
-                    let parts = snap.data().participants || [];
-                    parts = parts.filter(p => p !== currentGamerTag);
-                    await updateDoc(roomRef, { participants: parts });
+                // RULE 1: Strict paths
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+                await addDoc(messagesRef, {
+                    text: text,
+                    sender: username,
+                    roomCode: roomCode,
+                    timestamp: Date.now()
+                });
+            } catch (error) {
+                appendSystemMessage(`ERR_TX_FAILED: TRANSMISSION DROPPED.`);
+                console.error("Send error", error);
+            }
+        });
+
+        // LISTEN TO MESSAGES
+        function startListening() {
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+            
+            // RULE 2: No complex queries. Fetch all, filter in memory.
+            unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
+                const roomMessages = [];
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.roomCode === roomCode) {
+                        roomMessages.push(data);
+                    }
+                });
+
+                // Sort by time in memory
+                roomMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                
+                renderMessages(roomMessages);
+            }, (error) => {
+                appendSystemMessage(`CRITICAL ERR: DATABASE LINK SEVERED.`);
+                console.error("Listen error", error);
+            });
+        }
+
+        // RENDER
+        function renderMessages(messages) {
+            // Check scroll position to auto-scroll
+            const isScrolledToBottom = messageLog.scrollHeight - messageLog.clientHeight <= messageLog.scrollTop + 50;
+
+            // Clear the log except for system messages we want to keep (or just clear all and let the DB state rule)
+            // For a terminal, re-rendering entirely is fine, but we'll re-add the intro system messages.
+            messageLog.innerHTML = '';
+            
+            const introDiv = document.createElement('div');
+            introDiv.className = 'opacity-70 italic mb-4';
+            introDiv.innerHTML = `
+                <div>> NODE LINK SECURED...</div>
+                <div>> DECRYPTING TRANSMISSION HISTORY...</div>
+            `;
+            messageLog.appendChild(introDiv);
+
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                const isMe = msg.sender === username;
+                const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour12: false });
+                
+                if (isMe) {
+                    div.innerHTML = `<span class="opacity-50">[${timeStr}]</span> <span class="font-bold">> YOU:</span> ${escapeHtml(msg.text)}`;
+                } else {
+                    div.innerHTML = `<span class="opacity-50">[${timeStr}]</span> <span class="font-bold text-white">> ${escapeHtml(msg.sender)}:</span> <span class="text-white opacity-90">${escapeHtml(msg.text)}</span>`;
                 }
                 
-                // Send disconnect message
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-                await addDoc(messagesRef, {
-                    roomCode: currentRoomCode, sender: 'SYSTEM',
-                    text: `${currentGamerTag} severed link.`, timestamp: Date.now(), type: 'system'
-                });
-            } catch (e) { 
-                console.error(`Disconnect Error:`, e);
-            }
-
-            // Cleanup listeners
-            if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
-            if (unsubscribeRoom) { unsubscribeRoom(); unsubscribeRoom = null; }
-            
-            currentRoomCode = null;
-            document.getElementById('lobby-screen').classList.remove('hidden');
-            document.getElementById('chat-screen').classList.add('hidden');
-            window.showToast('DISCONNECTED', 'Link severed successfully.');
-        }
-
-        // Attach DOM Listeners securely
-        function attachDOMListeners() {
-            document.getElementById('create-squad-btn')?.addEventListener('click', createSquad);
-            document.getElementById('join-squad-btn')?.addEventListener('click', joinSquad);
-            document.getElementById('chat-form')?.addEventListener('submit', sendMessage);
-            document.getElementById('disconnect-btn')?.addEventListener('click', disconnect);
-            
-            document.getElementById('copy-code-btn')?.addEventListener('click', () => {
-                if (!currentRoomCode) return;
-                const ta = document.createElement('textarea');
-                ta.value = currentRoomCode;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                window.showToast('COPIED', 'Frequency code saved to clipboard.');
+                messageLog.appendChild(div);
             });
 
-            const toggleSidebar = () => document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
-            document.getElementById('sidebar-toggle-btn')?.addEventListener('click', toggleSidebar);
-            document.getElementById('sidebar-close-btn')?.addEventListener('click', toggleSidebar);
+            if (isScrolledToBottom) {
+                messageLog.scrollTop = messageLog.scrollHeight;
+            }
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', attachDOMListeners);
-        } else {
-            attachDOMListeners();
+        function appendSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'text-yellow-400 opacity-90';
+            div.textContent = `> SYS_MSG: ${text}`;
+            messageLog.appendChild(div);
+            messageLog.scrollTop = messageLog.scrollHeight;
         }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Focus username on load
+        window.addEventListener('DOMContentLoaded', () => {
+            usernameInput.focus();
+        });
+
+        // Ensure clicking anywhere on the chat focuses the input
+        chatScreen.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                chatInput.focus();
+            }
+        });
+
     </script>
 </body>
 </html>
