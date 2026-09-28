@@ -9,20 +9,21 @@
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         
         :root {
-            --term-green: #33ff00;
+            --term-green: #00ff00;
             --term-black: #000000;
         }
 
         body {
             background-color: var(--term-black);
             color: var(--term-green);
-            font-family: 'VT323', monospace;
-            font-size: 1.25rem; /* 20px base */
+            font-family: 'VT323', 'Courier New', Courier, monospace;
+            font-size: 1.5rem; 
             margin: 0;
             padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         input {
@@ -30,10 +31,11 @@
             color: var(--term-green);
             border: 1px solid var(--term-green);
             padding: 0.5rem;
-            font-family: 'VT323', monospace;
-            font-size: 1.25rem;
+            font-family: inherit;
+            font-size: 1.5rem;
             outline: none;
             width: 100%;
+            caret-color: var(--term-green);
         }
 
         input:focus {
@@ -45,21 +47,16 @@
             color: var(--term-green);
             border: 1px solid var(--term-green);
             padding: 0.5rem 1rem;
-            font-family: 'VT323', monospace;
-            font-size: 1.25rem;
+            font-family: inherit;
+            font-size: 1.5rem;
             cursor: pointer;
             text-transform: uppercase;
+            transition: all 0.1s ease;
         }
 
-        button:hover:not(:disabled) {
+        button:hover {
             background-color: var(--term-green);
             color: var(--term-black);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            border-style: dashed;
         }
 
         .hide {
@@ -67,60 +64,69 @@
         }
 
         /* Custom Scrollbar for message log */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: var(--term-black); border-left: 1px solid var(--term-green); }
         ::-webkit-scrollbar-thumb { background: var(--term-green); }
+
+        .blink {
+            animation: blink-animation 1s steps(2, start) infinite;
+        }
+        @keyframes blink-animation {
+            to { visibility: hidden; }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-3xl mx-auto w-full h-full flex flex-col border-2 border-[#33ff00] p-4">
+    <div class="max-w-4xl mx-auto w-full h-full flex flex-col border-2 border-[#00ff00] p-4">
         
-        <!-- Header -->
-        <header class="border-b border-[#33ff00] pb-2 mb-4 flex justify-between items-end">
-            <div>
-                <h1 class="text-3xl md:text-4xl uppercase m-0 leading-none">SYS_COMM_LINK</h1>
-                <div id="sys-status" class="text-sm mt-1 animate-pulse">STATUS: INITIALIZING SYSTEM...</div>
-            </div>
+        <header class="border-b border-[#00ff00] pb-2 mb-4">
+            <h1 class="text-4xl uppercase m-0 leading-none tracking-widest">SYS_COMM_LINK</h1>
         </header>
 
-        <!-- Lobby Section -->
-        <main id="lobby-screen" class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-6">
-            <div class="space-y-2">
-                <label class="block uppercase">> ENTER_USERNAME</label>
-                <input type="text" id="username-input" placeholder="e.g. NEO" maxlength="12" autocomplete="off" disabled>
-            </div>
-
-            <div class="border-t border-dashed border-[#33ff00] pt-6 space-y-4">
-                <button id="btn-create" class="w-full" disabled>
-                    [ CREATE_NEW_NODE ]
-                </button>
-                
-                <div class="text-center my-2">-- OR --</div>
-                
-                <div class="flex space-x-2">
-                    <input type="text" id="join-code-input" placeholder="6-DIGIT CODE" maxlength="6" autocomplete="off" class="text-center tracking-widest" disabled>
-                    <button id="btn-join" class="whitespace-nowrap" disabled>
-                        [ JOIN ]
-                    </button>
-                </div>
-                <div id="join-error" class="text-red-500 text-sm hide">> ERROR: CODE MUST BE 6 DIGITS</div>
+        <main id="boot-screen" class="flex-1 flex flex-col justify-center items-center text-center">
+            <div class="space-y-4">
+                <div>> INITIALIZING SYSTEM...</div>
+                <div>> ESTABLISHING SECURE CONNECTION...</div>
+                <div class="blink">_</div>
             </div>
         </main>
 
-        <!-- Chat Section -->
+        <main id="lobby-screen" class="hide flex-1 flex flex-col justify-center max-w-lg mx-auto w-full space-y-8">
+            <div class="space-y-2">
+                <label class="block uppercase">> ENTER_OPERATOR_NAME</label>
+                <input type="text" id="username-input" placeholder="e.g. NEO" maxlength="12" autocomplete="off">
+            </div>
+
+            <div class="border-t border-dashed border-[#00ff00] pt-8 space-y-6">
+                <button id="btn-create" class="w-full">
+                    [ CREATE_NEW_ROOM ]
+                </button>
+                
+                <div class="text-center">-- OR --</div>
+                
+                <div class="flex space-x-4">
+                    <input type="text" id="join-code-input" placeholder="6-DIGIT CODE" maxlength="6" autocomplete="off" class="text-center tracking-widest w-2/3">
+                    <button id="btn-join" class="w-1/3">
+                        [ JOIN ]
+                    </button>
+                </div>
+                <div id="lobby-error" class="text-red-500 text-sm hide">> ERROR: INVALID INPUT</div>
+            </div>
+        </main>
+
         <main id="chat-screen" class="hide flex-1 flex flex-col overflow-hidden">
-            <div class="flex justify-between border-b border-dashed border-[#33ff00] pb-2 mb-2 text-sm uppercase">
-                <div id="chat-info">USER: ??? | NODE: ???</div>
-                <button id="btn-disconnect" class="text-xs py-1 px-2 border-none underline hover:bg-transparent hover:text-white">DISCONNECT</button>
+            <div class="flex justify-between border-b border-dashed border-[#00ff00] pb-2 mb-4 uppercase">
+                <div id="chat-info">OPERATOR: ??? | ROOM: ???</div>
+                <button id="btn-disconnect" class="text-sm py-1 px-2">DISCONNECT</button>
             </div>
 
-            <div id="message-log" class="flex-1 overflow-y-auto flex flex-col space-y-1 mb-4 pb-2">
-                <!-- Messages will appear here -->
+            <div id="message-log" class="flex-1 overflow-y-auto flex flex-col space-y-2 mb-4 pb-2 pr-2">
+                <!-- Messages populate here -->
             </div>
 
-            <form id="chat-form" class="flex items-center space-x-2 mt-auto">
-                <span class="mb-1">></span>
+            <form id="chat-form" class="flex items-center space-x-4 mt-auto">
+                <span class="mb-1 text-2xl">></span>
                 <input type="text" id="chat-input" placeholder="TYPE TRANSMISSION..." autocomplete="off">
                 <button type="submit" id="btn-send">SEND</button>
             </form>
@@ -133,7 +139,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Variables
+        // Global Variables from Environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'terminal-chat-app';
         let firebaseConfig = {};
         let customToken = null;
@@ -142,7 +148,7 @@
             if (typeof __firebase_config !== 'undefined') firebaseConfig = JSON.parse(__firebase_config);
             if (typeof __initial_auth_token !== 'undefined') customToken = __initial_auth_token;
         } catch(e) {
-            console.error("Config parse error:", e);
+            console.error("Config parse error. Ensure environment variables are set.", e);
         }
 
         const app = initializeApp(firebaseConfig);
@@ -156,7 +162,7 @@
         let unsubscribe = null;
 
         // DOM Elements
-        const sysStatus = document.getElementById('sys-status');
+        const bootScreen = document.getElementById('boot-screen');
         const lobbyScreen = document.getElementById('lobby-screen');
         const chatScreen = document.getElementById('chat-screen');
         
@@ -164,7 +170,7 @@
         const btnCreate = document.getElementById('btn-create');
         const joinCodeInput = document.getElementById('join-code-input');
         const btnJoin = document.getElementById('btn-join');
-        const joinError = document.getElementById('join-error');
+        const lobbyError = document.getElementById('lobby-error');
         
         const chatInfo = document.getElementById('chat-info');
         const btnDisconnect = document.getElementById('btn-disconnect');
@@ -172,7 +178,6 @@
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
 
-        // 1. Authenticate FIRST
         async function bootSystem() {
             try {
                 if (customToken) {
@@ -181,75 +186,77 @@
                     await signInAnonymously(auth);
                 }
             } catch (err) {
-                sysStatus.textContent = "STATUS: CONNECTION FAILED";
                 console.error("Auth Error:", err);
+                bootScreen.innerHTML = `<div class="text-red-500">> FATAL ERROR: COULD NOT CONNECT TO SECURE SERVER.</div>`;
             }
         }
 
+        // Listen for Auth State
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                sysStatus.textContent = "STATUS: ONLINE // READY";
-                sysStatus.classList.remove('animate-pulse');
-                
-                // Enable inputs now that auth is complete
-                usernameInput.disabled = false;
-                joinCodeInput.disabled = false;
+                // Reveal interactive lobby only after Auth is confirmed
+                bootScreen.classList.add('hide');
+                lobbyScreen.classList.remove('hide');
                 usernameInput.focus();
-                
-                checkLobbyInputs();
             }
         });
 
         bootSystem();
 
-        // 2. Lobby Logic
-        function checkLobbyInputs() {
-            if (!currentUser) return;
-            const nameLen = usernameInput.value.trim().length;
-            const codeLen = joinCodeInput.value.trim().length;
-
-            btnCreate.disabled = nameLen === 0;
-            btnJoin.disabled = nameLen === 0 || codeLen !== 6;
-        }
-
         usernameInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase().replace(/\s/g, '');
-            checkLobbyInputs();
+            lobbyError.classList.add('hide');
         });
 
         joinCodeInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            joinError.classList.add('hide');
-            checkLobbyInputs();
+            lobbyError.classList.add('hide');
         });
 
         btnCreate.addEventListener('click', () => {
-            myUsername = usernameInput.value.trim();
+            const name = usernameInput.value.trim();
+            if (!name) {
+                showError("OPERATOR NAME REQUIRED");
+                return;
+            }
+            myUsername = name;
+            // Generate 6 digit code
             currentRoom = Math.floor(100000 + Math.random() * 900000).toString();
             enterChat();
         });
 
         btnJoin.addEventListener('click', () => {
+            const name = usernameInput.value.trim();
             const code = joinCodeInput.value.trim();
-            if (code.length === 6) {
-                myUsername = usernameInput.value.trim();
-                currentRoom = code;
-                enterChat();
-            } else {
-                joinError.classList.remove('hide');
+            
+            if (!name) {
+                showError("OPERATOR NAME REQUIRED");
+                return;
             }
+            if (code.length !== 6) {
+                showError("CODE MUST BE 6 DIGITS");
+                return;
+            }
+
+            myUsername = name;
+            currentRoom = code;
+            enterChat();
         });
 
-        // 3. Chat Room Logic
+        function showError(msg) {
+            lobbyError.textContent = `> ERROR: ${msg}`;
+            lobbyError.classList.remove('hide');
+        }
+
         function enterChat() {
             lobbyScreen.classList.add('hide');
             chatScreen.classList.remove('hide');
             
-            chatInfo.textContent = `USER: [${myUsername}] | NODE: [${currentRoom}]`;
+            chatInfo.textContent = `OPERATOR: [${myUsername}] | ROOM: [${currentRoom}]`;
             chatInput.focus();
             
-            messageLog.innerHTML = `<div class="opacity-50 italic mb-4">> NODE LINK SECURED... WAITING FOR TRANSMISSIONS.</div>`;
+            messageLog.innerHTML = `<div class="opacity-70 italic">> ROOM [${currentRoom}] SECURED. AWAITING TRANSMISSIONS...</div>`;
             
             startSync();
         }
@@ -257,15 +264,14 @@
         function startSync() {
             if (!currentUser || !currentRoom) return;
 
-            // Strict Rule 1: Use exact public path
-            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+            // Strict Rule 1: Exact Public Path
+            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_comms');
 
-            // Strict Rule 2: Fetch all, filter in JavaScript memory (no complex queries)
+            // Strict Rule 2: Fetch all, filter in memory
             unsubscribe = onSnapshot(messagesRef, (snapshot) => {
                 const msgs = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Filter in memory
                     if (data.roomCode === currentRoom) {
                         msgs.push(data);
                     }
@@ -273,20 +279,17 @@
 
                 // Sort in memory by time
                 msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                
                 renderMessages(msgs);
+
             }, (error) => {
                 console.error("Sync Error:", error);
-                const errDiv = document.createElement('div');
-                errDiv.textContent = "> ERROR: CONNECTION LOST.";
-                errDiv.className = "text-red-500";
-                messageLog.appendChild(errDiv);
+                messageLog.innerHTML += `<div class="text-red-500">> CONNECTION LOST.</div>`;
             });
         }
 
         function renderMessages(msgs) {
-            // Keep the intro message by finding it or just re-adding it
-            messageLog.innerHTML = `<div class="opacity-50 italic mb-4">> NODE LINK SECURED... WAITING FOR TRANSMISSIONS.</div>`;
+            // Keep intro message
+            messageLog.innerHTML = `<div class="opacity-70 italic mb-4">> ROOM [${currentRoom}] SECURED. AWAITING TRANSMISSIONS...</div>`;
             
             msgs.forEach(msg => {
                 const el = document.createElement('div');
@@ -295,7 +298,7 @@
                 if (msg.sender === myUsername) {
                     el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> YOU:</strong> ${escapeHtml(msg.text)}`;
                 } else {
-                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> ${escapeHtml(msg.sender)}:</strong> <span class="text-white">${escapeHtml(msg.text)}</span>`;
+                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> ${escapeHtml(msg.sender)}:</strong> ${escapeHtml(msg.text)}`;
                 }
                 
                 messageLog.appendChild(el);
@@ -310,10 +313,11 @@
             const text = chatInput.value.trim();
             if (!text || !currentUser || !currentRoom) return;
             
-            chatInput.value = ""; // Clear input UI immediately
+            chatInput.value = ""; 
+            chatInput.focus();
 
             try {
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_comms');
                 await addDoc(messagesRef, {
                     roomCode: currentRoom,
                     sender: myUsername,
@@ -334,10 +338,9 @@
             chatScreen.classList.add('hide');
             lobbyScreen.classList.remove('hide');
             joinCodeInput.value = "";
-            checkLobbyInputs();
+            usernameInput.focus();
         });
 
-        // Helper to prevent XSS
         function escapeHtml(str) {
             if (!str) return '';
             return str.toString()
@@ -347,7 +350,6 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-
     </script>
 </body>
 </html>
