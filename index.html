@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS_CHAT // SECURE PROTOCOL v8.0</title>
+    <title>NEXUS_CHAT // SECURE PROTOCOL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,17 +33,20 @@
             background-color: #0a0b10; color: #e2e8f0; font-family: 'Share Tech Mono', monospace;
             overflow-x: hidden;
         }
+        /* CRT Scanline Effect Overlay */
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
             background-size: 100% 4px; z-index: 9999; opacity: 0.35;
         }
+        /* Geometric Grid Background */
         .cyber-grid {
             background-image: 
                 linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
             background-size: 30px 30px;
         }
+        /* Custom Neon Borders and Glows */
         .neon-glow-cyan {
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
             border: 1px solid #00f0ff;
@@ -54,6 +57,8 @@
         }
         .neon-text-cyan { text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 16px rgba(0, 240, 255, 0.4); }
         .neon-text-magenta { text-shadow: 0 0 8px rgba(255, 0, 127, 0.8), 0 0 16px rgba(255, 0, 127, 0.4); }
+        
+        /* Thematic Scrollbars */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0a0b10; }
         ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
@@ -68,10 +73,10 @@
         <div class="text-center mb-10 w-full">
             <div id="cloud-status-badge" class="inline-flex items-center space-x-2 px-3 py-1 mb-3 text-xs font-bold tracking-widest text-yellow-400 bg-yellow-400/10 rounded border border-yellow-400/30 transition-colors duration-300">
                 <span class="w-2 h-2 bg-yellow-400 rounded-full animate-ping" id="cloud-status-dot"></span>
-                <span id="cloud-status-text">INITIALIZING NETWORK...</span>
+                <span id="cloud-status-text">INITIALIZING FIREBASE SDK...</span>
             </div>
             <h1 class="font-orbitron text-3xl sm:text-5xl font-black tracking-wider text-cyber-cyan neon-text-cyan uppercase">
-                NEXUS_CHAT <span class="text-cyber-magenta font-light">// 8.0</span>
+                NEXUS_CHAT <span class="text-cyber-magenta font-light">// 8.5</span>
             </h1>
             <p class="text-gray-400 text-sm sm:text-base mt-2 font-tech tracking-wider">
                 CROSS-DEVICE SQUAD COMMS
@@ -79,7 +84,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-            <!-- CREATE SQUAD -->
+            <!-- CREATE SQUAD CARD -->
             <div class="bg-cyber-card neon-glow-cyan p-6 sm:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden group">
                 <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-cyan/5 rounded-full blur-2xl transition-all pointer-events-none"></div>
                 <div>
@@ -108,7 +113,7 @@
                 </div>
             </div>
 
-            <!-- JOIN SQUAD -->
+            <!-- JOIN SQUAD CARD -->
             <div class="bg-cyber-card neon-glow-magenta p-6 sm:p-8 rounded-xl flex flex-col justify-between relative overflow-hidden group">
                 <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-magenta/5 rounded-full blur-2xl transition-all pointer-events-none"></div>
                 <div>
@@ -144,7 +149,7 @@
         </div>
         
         <div class="mt-8 text-xs text-gray-500 font-tech flex justify-between w-full max-w-4xl px-4 pointer-events-none">
-            <span id="client-uuid">STATUS: AWAITING AUTH...</span>
+            <span id="client-uuid">STATUS: WAITING FOR CLOUD...</span>
         </div>
     </div>
 
@@ -177,7 +182,7 @@
         </header>
 
         <div class="flex-1 flex overflow-hidden relative">
-            <!-- Sidebar / Roster -->
+            <!-- Sidebar / Squad Roster -->
             <aside id="sidebar" class="w-64 bg-cyber-card/95 backdrop-blur-md border-r border-cyber-border flex flex-col absolute md:relative z-40 inset-y-0 left-0 transition-transform duration-300 -translate-x-full md:translate-x-0">
                 <div class="p-4 border-b border-cyber-border flex items-center justify-between">
                     <h3 class="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center space-x-2">
@@ -187,7 +192,7 @@
                     <button id="sidebar-close-btn" class="md:hidden text-gray-400 hover:text-white pointer-events-auto p-2"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div id="roster-list" class="flex-1 overflow-y-auto p-4 space-y-3 font-tech text-sm pb-20">
-                    <!-- Dynamic Roster -->
+                    <!-- Dynamic Roster list populated by Firebase -->
                 </div>
             </aside>
 
@@ -196,10 +201,13 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
 
+            <!-- Main Chat Area -->
             <main class="flex-1 flex flex-col bg-cyber-bg overflow-hidden relative z-20">
                 <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 font-tech pb-4">
-                    <!-- Dynamic Messages -->
+                    <!-- Dynamic Messages populated by Firebase -->
                 </div>
+                
+                <!-- Chat Input Form -->
                 <div class="p-3 sm:p-4 bg-cyber-card border-t border-cyber-border relative z-50 pointer-events-auto shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
                     <form id="chat-form" class="flex items-center space-x-2 max-w-4xl mx-auto">
                         <div class="relative flex-1">
@@ -219,37 +227,7 @@
         </div>
     </div>
 
-    <div class="fixed bottom-2 right-2 z-[9999] w-72 sm:w-80 bg-cyber-darker border border-cyber-border rounded-lg shadow-2xl overflow-hidden font-tech text-xs opacity-90 hover:opacity-100 transition-opacity">
-        <div id="debug-header" class="bg-cyber-card px-3 py-2 border-b border-cyber-border flex items-center justify-between cursor-pointer hover:bg-cyber-border/40 transition pointer-events-auto">
-            <div class="flex items-center space-x-2">
-                <span class="w-2 h-2 bg-cyber-magenta rounded-full animate-pulse"></span>
-                <span class="font-orbitron font-bold text-cyber-magenta text-[11px]">DIAGNOSTIC CONSOLE</span>
-            </div>
-            <i class="fa-solid fa-chevron-down text-gray-400" id="debug-toggle-icon"></i>
-        </div>
-        <div id="debug-body" class="p-3 h-40 overflow-y-auto space-y-1 bg-black/95 text-gray-300 hidden">
-            <!-- Dynamic Logs -->
-        </div>
-    </div>
-
     <script>
-        // Diagnostic Logging Utility
-        window.logDebug = function(level, text) {
-            const body = document.getElementById('debug-body');
-            if (!body) return;
-            const timeStr = new Date().toLocaleTimeString();
-            let colorClass = 'text-gray-400';
-            if (level === 'ERROR') colorClass = 'text-red-400 font-bold';
-            if (level === 'SUCCESS') colorClass = 'text-cyber-green';
-            if (level === 'WARN') colorClass = 'text-yellow-400';
-            
-            const div = document.createElement('div');
-            div.innerHTML = `<span class="text-gray-600">[${timeStr}]</span> <span class="${colorClass}">[${level}]</span> ${text}`;
-            body.appendChild(div);
-            body.scrollTop = body.scrollHeight;
-            console.log(`[${level}] ${text}`);
-        };
-
         // UI Toast Notification Utility
         window.showToast = function(title, message, type = 'success') {
             const container = document.getElementById('toast-container');
@@ -274,20 +252,13 @@
             text.textContent = statusText;
         };
 
-        // Debug Console Toggle
-        document.getElementById('debug-header')?.addEventListener('click', () => {
-            const body = document.getElementById('debug-body');
-            const icon = document.getElementById('debug-toggle-icon');
-            body.classList.toggle('hidden');
-            icon.className = body.classList.contains('hidden') ? 'fa-solid fa-chevron-down text-gray-400' : 'fa-solid fa-chevron-up text-gray-400';
-        });
-
-        // XSS Prevention
+        // XSS Prevention for user inputs
         window.escapeHtml = function(str) {
             if (!str) return '';
             return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
         };
 
+        // Code Generator
         window.generateCode = function() {
             return Math.floor(100000 + Math.random() * 900000).toString();
         };
@@ -307,82 +278,71 @@
         let currentRoomCode = null;
         let currentGamerTag = '';
         
-        window.logDebug('INFO', 'System Boot Sequence Initiated.');
-        const appId = window.__app_id || (typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat');
-        let firebaseConfig = null;
-        let customToken = window.__initial_auth_token || (typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null);
-
-        // Safely extract Firebase config injected by the platform
-        try {
-            let configRaw = window.__firebase_config || (typeof __firebase_config !== 'undefined' ? __firebase_config : null);
-            if (configRaw) {
-                firebaseConfig = typeof configRaw === 'string' ? JSON.parse(configRaw) : configRaw;
-                if (firebaseConfig && firebaseConfig.projectId) {
-                    window.logDebug('SUCCESS', `Cloud Config Verified: ${firebaseConfig.projectId}`);
-                } else {
-                    throw new Error("Missing projectId in config");
-                }
-            } else {
-                throw new Error("No config object found in environment");
-            }
-        } catch (e) {
-            window.logDebug('ERROR', `Config Extraction Failed: ${e.message}`);
-            window.showToast('SYSTEM HALT', 'Cloud sync configuration missing.', 'error');
-            window.updateCloudStatus('CLOUD SYNC FAILED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
-        }
-
-        // Initialize Firebase ONLY if config is valid
-        if (firebaseConfig) {
+        // STANDARD FIREBASE INITIALIZATION 
+        // Using exact variable identifiers provided by the environment injection
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat';
+        
+        // Safely extract the injected environment JSON configuration string
+        let firebaseConfig = {};
+        if (typeof __firebase_config !== 'undefined') {
             try {
-                window.logDebug('INFO', 'Initializing Firebase Cloud...');
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Enforce authentication before enabling features
-                window.updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400', 'bg-yellow-400/10');
-                
-                if (customToken) {
-                    signInWithCustomToken(auth, customToken).catch(e => {
-                        window.logDebug('WARN', `Token Auth Failed, falling back to Anon: ${e.message}`);
-                        signInAnonymously(auth);
-                    });
-                } else {
-                    signInAnonymously(auth).catch(e => window.logDebug('ERROR', `Anon Auth Failed: ${e.message}`));
-                }
-
-                // Listen for Auth State
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUser = user;
-                        document.getElementById('client-uuid').textContent = `SECURE ID: ${user.uid}`;
-                        window.updateCloudStatus('CLOUD CONNECTED', 'text-cyber-green', 'bg-cyber-green', 'bg-cyber-green/10');
-                        
-                        // Enable UI Buttons!
-                        document.getElementById('create-squad-btn').disabled = false;
-                        document.getElementById('create-squad-btn').classList.remove('cursor-wait');
-                        document.getElementById('join-squad-btn').disabled = false;
-                        document.getElementById('join-squad-btn').classList.remove('cursor-wait');
-                        
-                        window.logDebug('SUCCESS', `Authenticated as ${user.uid}`);
-                    } else {
-                        currentUser = null;
-                        document.getElementById('client-uuid').textContent = `OFFLINE`;
-                        window.updateCloudStatus('LINK SEVERED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
-                        document.getElementById('create-squad-btn').disabled = true;
-                        document.getElementById('join-squad-btn').disabled = true;
-                    }
-                });
-
-            } catch (initErr) {
-                window.logDebug('ERROR', `Firebase Init Failed: ${initErr.message}`);
-                window.updateCloudStatus('CLOUD INIT FAILED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
+                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
+            } catch(e) {
+                console.error("Critical: Failed to parse native __firebase_config", e);
             }
+        }
+        
+        const customToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        try {
+            console.log("Initializing Firebase application...");
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // Initiate Authentication Sequence before unlocking the UI
+            window.updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400', 'bg-yellow-400/10');
+            
+            if (customToken) {
+                signInWithCustomToken(auth, customToken).catch(e => {
+                    console.warn(`Custom Token Auth Failed, falling back to Anon:`, e);
+                    signInAnonymously(auth);
+                });
+            } else {
+                signInAnonymously(auth).catch(e => console.error(`Anon Auth Failed:`, e));
+            }
+
+            // Listen for Auth State changes to ensure the database can be accessed safely
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('client-uuid').textContent = `SECURE ID: ${user.uid}`;
+                    window.updateCloudStatus('CLOUD CONNECTED (SYNC ACTIVE)', 'text-cyber-green', 'bg-cyber-green', 'bg-cyber-green/10');
+                    
+                    // Enable UI Buttons since Firebase is ready
+                    document.getElementById('create-squad-btn').disabled = false;
+                    document.getElementById('create-squad-btn').classList.remove('cursor-wait');
+                    document.getElementById('join-squad-btn').disabled = false;
+                    document.getElementById('join-squad-btn').classList.remove('cursor-wait');
+                    console.log(`Authenticated securely as ${user.uid}`);
+                } else {
+                    currentUser = null;
+                    document.getElementById('client-uuid').textContent = `OFFLINE`;
+                    window.updateCloudStatus('LINK SEVERED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
+                    document.getElementById('create-squad-btn').disabled = true;
+                    document.getElementById('join-squad-btn').disabled = true;
+                }
+            });
+
+        } catch (initErr) {
+            console.error(`Firebase Core Init Failed:`, initErr);
+            window.updateCloudStatus('FIREBASE INIT FAILED', 'text-red-400', 'bg-red-500', 'bg-red-500/10');
+            window.showToast('SYSTEM HALT', 'Native Firebase configuration could not be loaded.', 'error');
         }
 
         async function createSquad(e) {
             e.preventDefault();
-            if (!currentUser || !db) return window.showToast('DENIED', 'Cloud connection required.', 'error');
+            if (!currentUser || !db) return window.showToast('DENIED', 'Active cloud connection required.', 'error');
             
             const inputTag = document.getElementById('create-gamer-tag').value.trim();
             if (!inputTag) return window.showToast('DENIED', 'Gamer Tag required.', 'error');
@@ -390,10 +350,8 @@
             currentGamerTag = inputTag;
             currentRoomCode = window.generateCode();
             
-            window.logDebug('INFO', `Initializing cloud squad channel: ${currentRoomCode}`);
-            
             try {
-                // RULE 1: Strict paths for public data
+                // strict paths for public data adherence
                 const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
                 await setDoc(roomRef, {
                     roomCode: currentRoomCode,
@@ -412,14 +370,14 @@
                 
                 transitionToChat();
             } catch (err) {
-                window.logDebug('ERROR', `Create Room Error: ${err.message}`);
+                console.error(`Create Room Error:`, err);
                 window.showToast('DATABASE ERROR', err.message, 'error');
             }
         }
 
         async function joinSquad(e) {
             e.preventDefault();
-            if (!currentUser || !db) return window.showToast('DENIED', 'Cloud connection required.', 'error');
+            if (!currentUser || !db) return window.showToast('DENIED', 'Active cloud connection required.', 'error');
 
             const inputTag = document.getElementById('join-gamer-tag').value.trim();
             const inputCode = document.getElementById('join-room-code').value.trim().toUpperCase();
@@ -456,7 +414,7 @@
                 
                 transitionToChat();
             } catch (err) {
-                window.logDebug('ERROR', `Join Error: ${err.message}`);
+                console.error(`Join Error:`, err);
                 window.showToast('DATABASE ERROR', err.message, 'error');
             }
         }
@@ -481,7 +439,7 @@
                 const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
                 await addDoc(messagesRef, msgData);
             } catch (err) {
-                window.logDebug('ERROR', `Send Msg Error: ${err.message}`);
+                console.error(`Send Msg Error:`, err);
                 window.showToast('TRANSMIT ERROR', err.message, 'error');
             }
         }
@@ -499,19 +457,17 @@
 
         function startRealtimeSync() {
             if (!currentRoomCode || !db) return;
-            window.logDebug('INFO', `Starting sync for room ${currentRoomCode}`);
+            console.log(`Starting real-time listener for room ${currentRoomCode}`);
             
             // Sync Roster
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
             unsubscribeRoom = onSnapshot(roomRef, (snap) => {
                 if (snap.exists()) {
                     renderRoster(snap.data().participants || []);
-                } else {
-                    window.logDebug('WARN', 'Room document deleted/missing.');
                 }
-            }, (error) => window.logDebug('ERROR', `Room Sync: ${error.message}`));
+            }, (error) => console.error(`Room Sync Failed:`, error));
 
-            // Sync Messages (RULE 2: Fetch all, filter & sort in memory)
+            // Sync Messages (Fetching all and filtering in-memory to strictly obey Rule 2: No Complex Queries)
             const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
             unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
                 let msgs = [];
@@ -520,12 +476,12 @@
                     if (data.roomCode === currentRoomCode) msgs.push(data);
                 });
                 
-                // Sort by timestamp
+                // Sort chronologically in memory
                 msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 
                 document.getElementById('chat-messages').innerHTML = '';
                 msgs.forEach(m => appendMessageToUI(m, true));
-            }, (error) => window.logDebug('ERROR', `Messages Sync: ${error.message}`));
+            }, (error) => console.error(`Messages Sync Failed:`, error));
         }
 
         function renderRoster(participants) {
@@ -547,7 +503,6 @@
 
         function appendMessageToUI(msg, isBulk = false) {
             const container = document.getElementById('chat-messages');
-            // Check if user is scrolled near bottom
             const isScrolled = container.scrollHeight - container.clientHeight <= container.scrollTop + 40;
             
             const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -571,7 +526,6 @@
             }
             container.appendChild(div);
             
-            // Auto scroll logic
             if (isScrolled || !isBulk) {
                 setTimeout(() => { container.scrollTop = container.scrollHeight; }, 10);
             }
@@ -579,7 +533,6 @@
 
         async function disconnect() {
             if (!currentRoomCode || !currentGamerTag || !db) return;
-            window.logDebug('INFO', 'Initiating disconnect sequence.');
 
             try {
                 // Remove self from roster
@@ -598,7 +551,7 @@
                     text: `${currentGamerTag} severed link.`, timestamp: Date.now(), type: 'system'
                 });
             } catch (e) { 
-                window.logDebug('ERROR', `Disconnect Error: ${e.message}`);
+                console.error(`Disconnect Error:`, e);
             }
 
             // Cleanup listeners
@@ -611,6 +564,7 @@
             window.showToast('DISCONNECTED', 'Link severed successfully.');
         }
 
+        // Attach DOM Listeners securely
         function attachDOMListeners() {
             document.getElementById('create-squad-btn')?.addEventListener('click', createSquad);
             document.getElementById('join-squad-btn')?.addEventListener('click', joinSquad);
@@ -631,11 +585,8 @@
             const toggleSidebar = () => document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
             document.getElementById('sidebar-toggle-btn')?.addEventListener('click', toggleSidebar);
             document.getElementById('sidebar-close-btn')?.addEventListener('click', toggleSidebar);
-            
-            window.logDebug('INFO', 'DOM listeners attached.');
         }
 
-        // Attach listeners when ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', attachDOMListeners);
         } else {
