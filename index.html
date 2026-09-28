@@ -430,7 +430,7 @@
     <!-- FIREBASE CLOUD & APP LOGIC (Rule 1, 2, 3 Compliant) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let db = null;
@@ -438,36 +438,61 @@
         let currentUser = null;
         let unsubscribeMessages = null;
         let unsubscribeRoom = null;
+        let isAuthReady = false;
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat-app-v4';
 
         try {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                const app = initializeApp(JSON.parse(__firebase_config));
-                db = getFirestore(app);
-                auth = getAuth(app);
+            updateCloudStatus('INITIALIZING CLOUD...', 'text-yellow-400', 'bg-yellow-400');
+            
+            // Strictly enforce real Firebase config (No standalone fallback)
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
 
-                const authPromise = typeof __initial_auth_token !== 'undefined' && __initial_auth_token 
-                    ? signInWithCustomToken(auth, __initial_auth_token)
-                    : signInAnonymously(auth);
-
-                authPromise.then(() => {
+            // Rule 3: Explicitly execute Authentication BEFORE any DB operations
+            const authenticate = async () => {
+                try {
+                    updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400');
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    
                     currentUser = auth.currentUser;
+                    isAuthReady = true;
+                    
                     const uuidEl = document.getElementById('client-uuid');
                     if (uuidEl) uuidEl.textContent = currentUser ? currentUser.uid : 'ONLINE';
+                    
                     updateCloudStatus('CLOUD CONNECTED (FIRESTORE)', 'text-cyber-green', 'bg-cyber-green');
-                    logDebug('SUCCESS', `Firebase authenticated successfully. UID: ${currentUser?.uid}`);
-                }).catch(err => {
+                    logDebug('SUCCESS', `Firebase authenticated. UID: ${currentUser?.uid}`);
+                } catch (err) {
                     updateCloudStatus('CLOUD AUTH ERROR', 'text-red-400', 'bg-red-400');
                     logDebug('ERROR', `Firebase authentication failed: ${err.message}`);
-                });
-            } else {
-                updateCloudStatus('STANDALONE MODE (NO FIREBASE CONFIG)', 'text-yellow-400', 'bg-yellow-400');
-                logDebug('INFO', 'Running in standalone fallback mode.');
-            }
+                }
+            };
+
+            // Trigger explicit auth immediately
+            authenticate();
+
+            // Track state changes to correctly handle session expiry (does NOT replace explicit login above)
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    isAuthReady = true;
+                } else {
+                    currentUser = null;
+                    isAuthReady = false;
+                    updateCloudStatus('CLOUD DISCONNECTED', 'text-red-400', 'bg-red-400');
+                }
+            });
+
         } catch (e) {
-            updateCloudStatus('CLOUD CONNECTION FAILED', 'text-red-400', 'bg-red-400');
-            logDebug('ERROR', `Cloud initialization exception: ${e.message}`);
+            updateCloudStatus('FIREBASE CONFIG ERROR', 'text-red-400', 'bg-red-400');
+            logDebug('ERROR', `Cloud initialization failed (Ensure DB config exists): ${e.message}`);
         }
 
         let currentRoomCode = null;
@@ -491,7 +516,7 @@
                 return;
             }
 
-            if (!auth || !auth.currentUser) {
+            if (!isAuthReady || !auth || !auth.currentUser) {
                 showToast('CLOUD SYNC ERROR', 'Waiting for cloud authentication...', 'error');
                 logDebug('ERROR', 'Create squad blocked: Auth not ready');
                 return;
@@ -555,7 +580,7 @@
                 return;
             }
 
-            if (!auth || !auth.currentUser) {
+            if (!isAuthReady || !auth || !auth.currentUser) {
                 showToast('CLOUD SYNC ERROR', 'Waiting for cloud authentication...', 'error');
                 logDebug('ERROR', 'Join squad blocked: Auth not ready');
                 return;
@@ -673,7 +698,7 @@
             const text = input ? input.value.trim() : '';
 
             if (!text || !currentRoomCode) return;
-            if (!auth || !auth.currentUser) {
+            if (!isAuthReady || !auth || !auth.currentUser) {
                 showToast('SYNC ERROR', 'Not connected to cloud.', 'error');
                 return;
             }
