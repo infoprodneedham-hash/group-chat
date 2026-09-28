@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SECURE TERMINAL</title>
+    <title>SECURE TERMINAL - MULTI-OP</title>
     <!-- Pull in PeerJS for Peer-to-Peer direct connections -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -105,9 +105,29 @@
         #chat-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid var(--term-green);
             padding-bottom: 10px;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        #btn-leave {
+            padding: 5px 10px;
+            font-size: 14px;
+            border-color: #ff3333;
+            color: #ff3333;
+        }
+        
+        #btn-leave:hover {
+            background-color: #ff3333;
+            color: var(--bg-color);
         }
 
         #chat-log {
@@ -158,7 +178,7 @@
             <br><hr style="border-color: var(--term-green); opacity: 0.5;"><br>
 
             <div class="form-group">
-                <label>> TO HOST A NEW SECURE LINE:</label>
+                <label>> TO HOST A NEW SECURE LINE (MULTI-USER):</label>
                 <button type="button" id="btn-host">[ INITIALIZE HOST ROOM ]</button>
             </div>
 
@@ -174,9 +194,12 @@
         <!-- CHAT SCREEN -->
         <div id="chat-screen">
             <div id="chat-header">
-                <span id="display-alias">OP: UNKNOWN</span>
-                <span id="display-code">CODE: ------</span>
-                <span id="display-status">STATUS: WAIT</span>
+                <div class="header-stats">
+                    <span id="display-alias">OP: UNKNOWN</span>
+                    <span id="display-code">CODE: ------</span>
+                    <span id="display-status">STATUS: WAIT</span>
+                </div>
+                <button type="button" id="btn-leave">[ DISCONNECT ]</button>
             </div>
             
             <div id="chat-log"></div>
@@ -201,7 +224,8 @@
         
         // App State
         let peer = null;
-        let p2pConnection = null;
+        let connections = []; // Array to hold all connected users
+        let isHost = false;
         let myAlias = 'Operator';
         let currentRoomCode = '';
 
@@ -212,45 +236,46 @@
             setTimeout(() => {
                 bootScreen.classList.remove('active');
                 lobbyScreen.classList.active = true;
-                lobbyScreen.style.display = 'flex'; // Force display
+                lobbyScreen.style.display = 'flex';
             }, 2000);
             
             // Bind Buttons
             document.getElementById('btn-host').addEventListener('click', startHost);
             document.getElementById('btn-join').addEventListener('click', startClient);
+            document.getElementById('btn-leave').addEventListener('click', disconnectNetwork);
             chatForm.addEventListener('submit', sendMessage);
         });
 
-        // --- 2. HOSTING A ROOM ---
+        // --- 2. HOSTING A ROOM (Acts as the Hub) ---
         function startHost() {
             const inputAlias = document.getElementById('alias-input').value.trim();
             if(inputAlias) myAlias = inputAlias;
+            isHost = true;
 
             // Generate random 6 digit code
             currentRoomCode = Math.floor(100000 + Math.random() * 900000).toString();
             const peerId = 'nexus-room-' + currentRoomCode;
 
-            switchToChat(currentRoomCode, 'LISTENING...');
+            switchToChat(currentRoomCode, 'LISTENING (HOST)...');
 
-            // Initialize Peer with specific ID
             peer = new Peer(peerId);
             
             peer.on('open', (id) => {
-                logSystem(`Host line established. Waiting for remote connection on code: ${currentRoomCode}`);
+                logSystem(`Host line established. Awaiting operators on code: ${currentRoomCode}`);
             });
 
-            // Listen for incoming connection
+            // Listen for incoming connections from multiple clients
             peer.on('connection', (conn) => {
-                p2pConnection = conn;
-                setupConnectionData();
+                connections.push(conn);
+                setupConnectionData(conn);
                 logSystem(`INCOMING CONNECTION ACCEPTED.`);
-                document.getElementById('display-status').innerText = 'STATUS: CONNECTED';
+                updateStatus();
             });
 
             peer.on('error', (err) => logSystem(`SYS ERROR: ${err.type}`));
         }
 
-        // --- 3. JOINING A ROOM ---
+        // --- 3. JOINING A ROOM (Connects to the Hub) ---
         function startClient() {
             const inputAlias = document.getElementById('alias-input').value.trim();
             const inputCode = document.getElementById('code-input').value.trim();
@@ -261,72 +286,126 @@
                 return;
             }
 
+            isHost = false;
             currentRoomCode = inputCode;
             switchToChat(currentRoomCode, 'SEARCHING...');
 
-            // Initialize Peer with random client ID
             peer = new Peer();
             
             peer.on('open', (id) => {
                 logSystem(`Searching network for room code ${currentRoomCode}...`);
                 const targetId = 'nexus-room-' + currentRoomCode;
-                p2pConnection = peer.connect(targetId);
-                setupConnectionData();
+                const conn = peer.connect(targetId);
+                connections.push(conn);
+                setupConnectionData(conn);
             });
 
-            peer.on('error', (err) => logSystem(`SYS ERROR: ${err.type}`));
+            peer.on('error', (err) => {
+                logSystem(`SYS ERROR: ${err.type}`);
+                if(err.type === 'peer-unavailable') {
+                    logSystem('Room not found. The host may have disconnected.');
+                }
+            });
         }
 
         // --- 4. CONNECTION HANDLING ---
-        function setupConnectionData() {
-            p2pConnection.on('open', () => {
+        function setupConnectionData(conn) {
+            conn.on('open', () => {
                 logSystem(`SECURE TUNNEL ESTABLISHED.`);
-                document.getElementById('display-status').innerText = 'STATUS: CONNECTED';
+                updateStatus();
                 
-                // Say hello automatically
-                p2pConnection.send({ type: 'sys', text: `${myAlias} has entered the line.` });
+                // Introduce yourself to the network
+                conn.send({ type: 'sys', text: `${myAlias} has entered the line.` });
             });
 
-            p2pConnection.on('data', (data) => {
+            conn.on('data', (data) => {
+                // Display the received message
                 if (data.type === 'sys') {
                     logSystem(data.text);
                 } else {
                     logMessage(data.sender, data.text, 'msg-remote');
                 }
+
+                // **CRITICAL FOR MULTI-USER**: If I am the Host, bounce this message to everyone else!
+                if (isHost) {
+                    broadcast(data, conn); // Pass 'conn' to exclude the sender from receiving their own message back
+                }
             });
 
-            p2pConnection.on('close', () => {
-                logSystem('WARNING: REMOTE CONNECTION LOST.');
-                document.getElementById('display-status').innerText = 'STATUS: DISCONNECTED';
+            conn.on('close', () => {
+                logSystem('WARNING: A REMOTE CONNECTION WAS LOST.');
+                // Remove this connection from our active array
+                connections = connections.filter(c => c !== conn);
+                updateStatus();
             });
         }
 
-        // --- 5. MESSAGING ---
+        // --- 5. MESSAGING & BROADCASTING ---
         function sendMessage(e) {
             e.preventDefault();
             const text = chatInput.value.trim();
             
-            if (text && p2pConnection && p2pConnection.open) {
-                // Send to peer
-                p2pConnection.send({ type: 'msg', sender: myAlias, text: text });
+            if (text && connections.length > 0) {
+                // Send to all connected peers
+                broadcast({ type: 'msg', sender: myAlias, text: text });
                 // Print locally
                 logMessage(myAlias, text, 'msg-self');
                 chatInput.value = '';
-            } else if (!p2pConnection || !p2pConnection.open) {
-                logSystem('SYS ERROR: Tunnel not open. Message dropped.');
+            } else if (connections.length === 0) {
+                logSystem('SYS ERROR: No active connections. Message dropped.');
             }
+        }
+
+        function broadcast(data, excludeConn = null) {
+            connections.forEach(conn => {
+                // Send to everyone EXCEPT the person who originally sent it to us (if any)
+                if (conn !== excludeConn && conn.open) {
+                    conn.send(data);
+                }
+            });
+        }
+
+        // --- 6. DISCONNECT & CLEANUP ---
+        function disconnectNetwork() {
+            logSystem('Disconnecting from network...');
+            
+            if (peer) {
+                peer.destroy(); // Destroys the peer and all associated connections
+            }
+            
+            // Reset App State
+            peer = null;
+            connections = [];
+            isHost = false;
+            currentRoomCode = '';
+            
+            // Reset UI
+            chatLog.innerHTML = '';
+            document.getElementById('chat-screen').classList.remove('active');
+            document.getElementById('chat-screen').style.display = 'none';
+            document.getElementById('lobby-screen').style.display = 'flex';
         }
 
         // --- UI UTILS ---
         function switchToChat(code, statusStr) {
             document.getElementById('lobby-screen').style.display = 'none';
             chatScreen.classList.add('active');
+            chatScreen.style.display = 'flex';
             
             document.getElementById('display-alias').innerText = `OP: ${myAlias.toUpperCase()}`;
             document.getElementById('display-code').innerText = `CODE: ${code}`;
             document.getElementById('display-status').innerText = `STATUS: ${statusStr}`;
             
             chatInput.focus();
+        }
+
+        function updateStatus() {
+            if (connections.length > 0) {
+                const count = isHost ? connections.length : 1;
+                document.getElementById('display-status').innerText = `STATUS: ONLINE [${count} PEER(S)]`;
+            } else {
+                document.getElementById('display-status').innerText = 'STATUS: WAITING/DISCONNECTED';
+            }
         }
 
         function logSystem(text) {
