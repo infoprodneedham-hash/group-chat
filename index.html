@@ -151,15 +151,14 @@
             console.error("Config parse error. Ensure environment variables are set.", e);
         }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        let app, auth, db;
 
         // App State
         let currentUser = null;
         let myUsername = "";
         let currentRoom = "";
         let unsubscribe = null;
+        let bootTimeout = null;
 
         // DOM Elements
         const bootScreen = document.getElementById('boot-screen');
@@ -179,28 +178,49 @@
         const chatInput = document.getElementById('chat-input');
 
         async function bootSystem() {
+            // 5-second failsafe timeout to prevent infinite loading screen
+            bootTimeout = setTimeout(() => {
+                if (!currentUser) {
+                    console.warn("System boot timeout. Forcing lobby entry.");
+                    bootScreen.classList.add('hide');
+                    lobbyScreen.classList.remove('hide');
+                    showError("SYS_TIMEOUT: DB CONNECTION HUNG. OFFLINE MODE.");
+                    usernameInput.focus();
+                }
+            }, 5000);
+
             try {
+                // Initialize Firebase securely inside try-catch
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Listen for Auth State
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        clearTimeout(bootTimeout);
+                        currentUser = user;
+                        // Reveal interactive lobby only after Auth is confirmed
+                        bootScreen.classList.add('hide');
+                        lobbyScreen.classList.remove('hide');
+                        usernameInput.focus();
+                    }
+                });
+
                 if (customToken) {
                     await signInWithCustomToken(auth, customToken);
                 } else {
                     await signInAnonymously(auth);
                 }
             } catch (err) {
-                console.error("Auth Error:", err);
-                bootScreen.innerHTML = `<div class="text-red-500">> FATAL ERROR: COULD NOT CONNECT TO SECURE SERVER.</div>`;
-            }
-        }
-
-        // Listen for Auth State
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                // Reveal interactive lobby only after Auth is confirmed
+                console.error("Auth/Init Error:", err);
+                clearTimeout(bootTimeout);
                 bootScreen.classList.add('hide');
                 lobbyScreen.classList.remove('hide');
+                showError("FATAL: INITIALIZATION FAILED. OFFLINE MODE.");
                 usernameInput.focus();
             }
-        });
+        }
 
         bootSystem();
 
