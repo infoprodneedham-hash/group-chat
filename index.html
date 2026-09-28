@@ -3,191 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL CHAT // OS_V1.0</title>
+    <title>TERMINAL CHAT</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
         :root {
             --term-green: #33ff00;
-            --term-dark: #051405;
-            --term-glow: 0 0 8px rgba(51, 255, 0, 0.6);
+            --term-black: #000000;
         }
 
-        body, html {
-            height: 100%;
+        body {
+            background-color: var(--term-black);
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.25rem; /* 20px base */
             margin: 0;
-            background-color: #000;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            background-color: var(--term-black);
             color: var(--term-green);
+            border: 1px solid var(--term-green);
+            padding: 0.5rem;
             font-family: 'VT323', monospace;
-            overflow: hidden;
-            font-size: 1.2rem;
-        }
-
-        /* CRT Effects */
-        .crt-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 50;
-        }
-
-        .crt-vignette {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
-            pointer-events: none;
-            z-index: 49;
-        }
-
-        /* Terminal Text Styling */
-        .term-text {
-            text-shadow: var(--term-glow);
-        }
-
-        .term-input {
-            background: transparent;
-            border: none;
-            color: var(--term-green);
-            font-family: 'VT323', monospace;
+            font-size: 1.25rem;
             outline: none;
-            box-shadow: none;
-            text-shadow: var(--term-glow);
-            caret-color: var(--term-green);
             width: 100%;
         }
 
-        .term-input:focus {
-            outline: none;
+        input:focus {
+            border-width: 2px;
         }
 
-        /* Blinking Cursor */
-        .cursor-blink {
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--term-dark); border-left: 1px solid var(--term-green); }
-        ::-webkit-scrollbar-thumb { background: var(--term-green); }
-
-        /* Interactive Elements */
-        .term-btn {
-            border: 1px solid var(--term-green);
-            background: transparent;
+        button {
+            background-color: var(--term-black);
             color: var(--term-green);
-            text-transform: uppercase;
+            border: 1px solid var(--term-green);
+            padding: 0.5rem 1rem;
+            font-family: 'VT323', monospace;
+            font-size: 1.25rem;
             cursor: pointer;
-            transition: all 0.2s;
-            text-shadow: var(--term-glow);
+            text-transform: uppercase;
         }
-        .term-btn:hover:not(:disabled) {
-            background: var(--term-green);
-            color: #000;
+
+        button:hover:not(:disabled) {
+            background-color: var(--term-green);
+            color: var(--term-black);
         }
-        .term-btn:disabled {
+
+        button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             border-style: dashed;
         }
 
-        /* Selection */
-        ::selection {
-            background: var(--term-green);
-            color: #000;
+        .hide {
+            display: none !important;
         }
+
+        /* Custom Scrollbar for message log */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--term-black); border-left: 1px solid var(--term-green); }
+        ::-webkit-scrollbar-thumb { background: var(--term-green); }
     </style>
 </head>
-<body class="p-4 sm:p-8 flex flex-col items-center justify-center">
-    
-    <div class="crt-overlay"></div>
-    <div class="crt-vignette"></div>
+<body class="p-4 md:p-8">
 
-    <div class="w-full max-w-4xl h-full flex flex-col relative z-10 border-2 border-[var(--term-green)] bg-[var(--term-dark)] p-4 shadow-[0_0_15px_rgba(51,255,0,0.3)]">
+    <div class="max-w-3xl mx-auto w-full h-full flex flex-col border-2 border-[#33ff00] p-4">
         
         <!-- Header -->
-        <div class="border-b border-[var(--term-green)] pb-2 mb-4 flex justify-between items-end">
+        <header class="border-b border-[#33ff00] pb-2 mb-4 flex justify-between items-end">
             <div>
-                <h1 class="text-3xl sm:text-4xl term-text uppercase leading-none">SYS_COMM_LINK_v2.0</h1>
-                <div class="text-sm opacity-80" id="connection-status">STATUS: INITIALIZING KERNEL...</div>
+                <h1 class="text-3xl md:text-4xl uppercase m-0 leading-none">SYS_COMM_LINK</h1>
+                <div id="sys-status" class="text-sm mt-1 animate-pulse">STATUS: INITIALIZING SYSTEM...</div>
             </div>
-            <div class="text-right hidden sm:block">
-                <div class="animate-pulse">_REC</div>
+        </header>
+
+        <!-- Lobby Section -->
+        <main id="lobby-screen" class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-6">
+            <div class="space-y-2">
+                <label class="block uppercase">> ENTER_USERNAME</label>
+                <input type="text" id="username-input" placeholder="e.g. NEO" maxlength="12" autocomplete="off" disabled>
             </div>
-        </div>
 
-        <div id="setup-screen" class="flex-1 flex flex-col justify-center items-center space-y-8">
-            <div class="w-full max-w-md space-y-6">
-                <div class="text-center mb-8">
-                    <pre class="text-[0.6rem] sm:text-xs leading-tight mb-4 term-text">
-  ___  _   _  ___  ____ 
- / _ \| \ | |/ _ \|  _ \
-| | | |  \| | | | | | | |
-| |_| | |\  | |_| | |_| |
- \___/|_| \_|\___/|____/ 
-                    </pre>
-                    <p class="uppercase">Identify yourself to the mainframe.</p>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block uppercase text-sm">> ENTER_USERNAME</label>
-                    <div class="flex items-center border border-[var(--term-green)] p-2 bg-black">
-                        <span class="mr-2">USR:</span>
-                        <input type="text" id="username-input" class="term-input uppercase" autocomplete="off" spellcheck="false" maxlength="12">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mt-6">
-                    <button id="btn-create-room" class="term-btn py-3 disabled:opacity-30" disabled>
-                        [ CREATE_NODE ]
-                    </button>
-                    <button id="btn-show-join" class="term-btn py-3 disabled:opacity-30" disabled>
-                        [ JOIN_NODE ]
+            <div class="border-t border-dashed border-[#33ff00] pt-6 space-y-4">
+                <button id="btn-create" class="w-full" disabled>
+                    [ CREATE_NEW_NODE ]
+                </button>
+                
+                <div class="text-center my-2">-- OR --</div>
+                
+                <div class="flex space-x-2">
+                    <input type="text" id="join-code-input" placeholder="6-DIGIT CODE" maxlength="6" autocomplete="off" class="text-center tracking-widest" disabled>
+                    <button id="btn-join" class="whitespace-nowrap" disabled>
+                        [ JOIN ]
                     </button>
                 </div>
-
-                <div id="join-section" class="hidden mt-6 p-4 border border-dashed border-[var(--term-green)] space-y-4">
-                    <label class="block uppercase text-sm">> ENTER_6_DIGIT_NODE_ID</label>
-                    <div class="flex items-center border border-[var(--term-green)] p-2 bg-black">
-                        <span class="mr-2">ID:</span>
-                        <input type="text" id="room-code-input" class="term-input uppercase tracking-[0.5em]" maxlength="6" autocomplete="off" placeholder="______">
-                    </div>
-                    <button id="btn-submit-join" class="term-btn py-2 w-full">
-                        CONNECT =>
-                    </button>
-                    <div id="join-error" class="text-red-500 text-sm hidden uppercase">ERROR: INVALID NODE ID</div>
-                </div>
+                <div id="join-error" class="text-red-500 text-sm hide">> ERROR: CODE MUST BE 6 DIGITS</div>
             </div>
-        </div>
+        </main>
 
-        <div id="chat-screen" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-            <div class="flex justify-between items-center mb-2 bg-[var(--term-green)] text-black px-2 py-1 font-bold uppercase">
-                <span id="active-user-display">USR: UNKNOWN</span>
-                <span>NODE: <span id="active-room-display" class="tracking-widest">000000</span></span>
-                <button id="btn-disconnect" class="hover:bg-black hover:text-[var(--term-green)] px-2 transition-colors border border-black">DISCONNECT_</button>
+        <!-- Chat Section -->
+        <main id="chat-screen" class="hide flex-1 flex flex-col overflow-hidden">
+            <div class="flex justify-between border-b border-dashed border-[#33ff00] pb-2 mb-2 text-sm uppercase">
+                <div id="chat-info">USER: ??? | NODE: ???</div>
+                <button id="btn-disconnect" class="text-xs py-1 px-2 border-none underline hover:bg-transparent hover:text-white">DISCONNECT</button>
             </div>
 
-            <!-- Messages Box -->
-            <div id="message-log" class="flex-1 overflow-y-auto p-2 font-mono flex flex-col space-y-1 pb-4">
-                <div class="opacity-70 italic">> COMM LINK ESTABLISHED. WAITING FOR TRANSMISSIONS...</div>
+            <div id="message-log" class="flex-1 overflow-y-auto flex flex-col space-y-1 mb-4 pb-2">
+                <!-- Messages will appear here -->
             </div>
 
-            <!-- Input Box -->
-            <div class="border-t border-[var(--term-green)] pt-3 mt-2 flex items-start group">
-                <span class="mr-2 mt-0.5 whitespace-nowrap" id="prompt-prefix">user@node></span>
-                <form id="message-form" class="flex-1 flex w-full">
-                    <input type="text" id="chat-input" class="term-input" autocomplete="off" spellcheck="false" placeholder="Type transmission...">
-                    <button type="submit" class="hidden">Send</button>
-                </form>
-                <span class="cursor-blink inline-block w-2.5 h-5 bg-[var(--term-green)] ml-1"></span>
-            </div>
-        </div>
-        
+            <form id="chat-form" class="flex items-center space-x-2 mt-auto">
+                <span class="mb-1">></span>
+                <input type="text" id="chat-input" placeholder="TYPE TRANSMISSION..." autocomplete="off">
+                <button type="submit" id="btn-send">SEND</button>
+            </form>
+        </main>
+
     </div>
 
     <script type="module">
@@ -195,272 +133,220 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        /* --- STATE --- */
-        let currentUser = null;
-        let username = "";
-        let roomCode = "";
-        let unsubscribeMessages = null;
-
-        /* --- DOM ELEMENTS --- */
-        const statusEl = document.getElementById('connection-status');
-        const setupScreen = document.getElementById('setup-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        
-        const usernameInput = document.getElementById('username-input');
-        const btnCreateRoom = document.getElementById('btn-create-room');
-        const btnShowJoin = document.getElementById('btn-show-join');
-        
-        const joinSection = document.getElementById('join-section');
-        const roomCodeInput = document.getElementById('room-code-input');
-        const btnSubmitJoin = document.getElementById('btn-submit-join');
-        const joinError = document.getElementById('join-error');
-        
-        const activeUserDisplay = document.getElementById('active-user-display');
-        const activeRoomDisplay = document.getElementById('active-room-display');
-        const btnDisconnect = document.getElementById('btn-disconnect');
-        const promptPrefix = document.getElementById('prompt-prefix');
-        
-        const messageLog = document.getElementById('message-log');
-        const messageForm = document.getElementById('message-form');
-        const chatInput = document.getElementById('chat-input');
-
-        /* --- FIREBASE INIT --- */
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'terminal-chat-v1';
+        // Global Variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'terminal-chat-app';
         let firebaseConfig = {};
         let customToken = null;
-
+        
         try {
             if (typeof __firebase_config !== 'undefined') firebaseConfig = JSON.parse(__firebase_config);
             if (typeof __initial_auth_token !== 'undefined') customToken = __initial_auth_token;
-        } catch (e) {
-            console.error("SYS_ERR: ENV PARSE FAILED", e);
+        } catch(e) {
+            console.error("Config parse error:", e);
         }
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        /* --- AUTHENTICATION --- */
-        async function connectToMainframe() {
+        // App State
+        let currentUser = null;
+        let myUsername = "";
+        let currentRoom = "";
+        let unsubscribe = null;
+
+        // DOM Elements
+        const sysStatus = document.getElementById('sys-status');
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        
+        const usernameInput = document.getElementById('username-input');
+        const btnCreate = document.getElementById('btn-create');
+        const joinCodeInput = document.getElementById('join-code-input');
+        const btnJoin = document.getElementById('btn-join');
+        const joinError = document.getElementById('join-error');
+        
+        const chatInfo = document.getElementById('chat-info');
+        const btnDisconnect = document.getElementById('btn-disconnect');
+        const messageLog = document.getElementById('message-log');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+
+        // 1. Authenticate FIRST
+        async function bootSystem() {
             try {
-                statusEl.textContent = "STATUS: AUTHENTICATING WITH MAINFRAME...";
                 if (customToken) {
                     await signInWithCustomToken(auth, customToken);
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (error) {
-                statusEl.textContent = "STATUS: AUTHENTICATION FAILED [ERR_01]";
-                statusEl.classList.add('text-red-500');
-                console.error(error);
+            } catch (err) {
+                sysStatus.textContent = "STATUS: CONNECTION FAILED";
+                console.error("Auth Error:", err);
             }
         }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                statusEl.textContent = "STATUS: ONLINE // AWAITING USER INPUT";
-                validateUsername(); // Check if buttons should be enabled
+                sysStatus.textContent = "STATUS: ONLINE // READY";
+                sysStatus.classList.remove('animate-pulse');
+                
+                // Enable inputs now that auth is complete
+                usernameInput.disabled = false;
+                joinCodeInput.disabled = false;
+                usernameInput.focus();
+                
+                checkLobbyInputs();
             }
         });
 
-        connectToMainframe();
+        bootSystem();
 
-        /* --- UI LOGIC --- */
-        function validateUsername() {
-            const val = usernameInput.value.trim();
-            const isValid = val.length > 0 && currentUser !== null;
-            btnCreateRoom.disabled = !isValid;
-            btnShowJoin.disabled = !isValid;
+        // 2. Lobby Logic
+        function checkLobbyInputs() {
+            if (!currentUser) return;
+            const nameLen = usernameInput.value.trim().length;
+            const codeLen = joinCodeInput.value.trim().length;
+
+            btnCreate.disabled = nameLen === 0;
+            btnJoin.disabled = nameLen === 0 || codeLen !== 6;
         }
 
-        usernameInput.addEventListener('input', () => {
-            // Force uppercase and remove spaces
-            usernameInput.value = usernameInput.value.toUpperCase().replace(/\s/g, '');
-            validateUsername();
+        usernameInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase().replace(/\s/g, '');
+            checkLobbyInputs();
         });
 
-        // CREATE ROOM
-        btnCreateRoom.addEventListener('click', () => {
-            username = usernameInput.value.trim();
-            // Generate 6 digit code
-            roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-            enterChatRoom();
+        joinCodeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            joinError.classList.add('hide');
+            checkLobbyInputs();
         });
 
-        // SHOW JOIN SECTION
-        btnShowJoin.addEventListener('click', () => {
-            joinSection.classList.remove('hidden');
-            roomCodeInput.focus();
+        btnCreate.addEventListener('click', () => {
+            myUsername = usernameInput.value.trim();
+            currentRoom = Math.floor(100000 + Math.random() * 900000).toString();
+            enterChat();
         });
 
-        roomCodeInput.addEventListener('input', () => {
-            roomCodeInput.value = roomCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            joinError.classList.add('hidden');
-        });
-
-        // SUBMIT JOIN
-        btnSubmitJoin.addEventListener('click', () => {
-            const code = roomCodeInput.value.trim();
+        btnJoin.addEventListener('click', () => {
+            const code = joinCodeInput.value.trim();
             if (code.length === 6) {
-                username = usernameInput.value.trim();
-                roomCode = code;
-                enterChatRoom();
+                myUsername = usernameInput.value.trim();
+                currentRoom = code;
+                enterChat();
             } else {
-                joinError.classList.remove('hidden');
+                joinError.classList.remove('hide');
             }
         });
 
-        /* --- CHAT LOGIC --- */
-        function enterChatRoom() {
-            setupScreen.classList.add('hidden');
-            chatScreen.classList.remove('hidden');
-            chatScreen.classList.add('flex');
+        // 3. Chat Room Logic
+        function enterChat() {
+            lobbyScreen.classList.add('hide');
+            chatScreen.classList.remove('hide');
             
-            activeUserDisplay.textContent = `USR: ${username}`;
-            activeRoomDisplay.textContent = roomCode;
-            promptPrefix.textContent = `${username}@${roomCode}>`;
-            
+            chatInfo.textContent = `USER: [${myUsername}] | NODE: [${currentRoom}]`;
             chatInput.focus();
             
-            // SYSTEM MESSAGE
-            appendSystemMessage(`JOINED NODE [${roomCode}] AS [${username}]`);
-            appendSystemMessage(`SECURE ENCRYPTION ACTIVE. ALL TRANSMISSIONS LOGGED.`);
-
-            startListening();
+            messageLog.innerHTML = `<div class="opacity-50 italic mb-4">> NODE LINK SECURED... WAITING FOR TRANSMISSIONS.</div>`;
+            
+            startSync();
         }
 
-        btnDisconnect.addEventListener('click', () => {
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
-                unsubscribeMessages = null;
-            }
-            
-            setupScreen.classList.remove('hidden');
-            chatScreen.classList.add('hidden');
-            chatScreen.classList.remove('flex');
-            
-            // Reset
-            roomCode = "";
-            joinSection.classList.add('hidden');
-            roomCodeInput.value = "";
-            messageLog.innerHTML = '<div class="opacity-70 italic">> COMM LINK ESTABLISHED. WAITING FOR TRANSMISSIONS...</div>';
-            statusEl.textContent = "STATUS: ONLINE // AWAITING USER INPUT";
-        });
+        function startSync() {
+            if (!currentUser || !currentRoom) return;
 
-        // SEND MESSAGE
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = chatInput.value.trim();
-            if (!text || !currentUser || !roomCode) return;
-
-            chatInput.value = ""; // Clear input immediately for responsiveness
-
-            try {
-                // RULE 1: Strict paths
-                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
-                await addDoc(messagesRef, {
-                    text: text,
-                    sender: username,
-                    roomCode: roomCode,
-                    timestamp: Date.now()
-                });
-            } catch (error) {
-                appendSystemMessage(`ERR_TX_FAILED: TRANSMISSION DROPPED.`);
-                console.error("Send error", error);
-            }
-        });
-
-        // LISTEN TO MESSAGES
-        function startListening() {
+            // Strict Rule 1: Use exact public path
             const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
-            
-            // RULE 2: No complex queries. Fetch all, filter in memory.
-            unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
-                const roomMessages = [];
-                
-                snapshot.forEach((doc) => {
+
+            // Strict Rule 2: Fetch all, filter in JavaScript memory (no complex queries)
+            unsubscribe = onSnapshot(messagesRef, (snapshot) => {
+                const msgs = [];
+                snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.roomCode === roomCode) {
-                        roomMessages.push(data);
+                    // Filter in memory
+                    if (data.roomCode === currentRoom) {
+                        msgs.push(data);
                     }
                 });
 
-                // Sort by time in memory
-                roomMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                // Sort in memory by time
+                msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 
-                renderMessages(roomMessages);
+                renderMessages(msgs);
             }, (error) => {
-                appendSystemMessage(`CRITICAL ERR: DATABASE LINK SEVERED.`);
-                console.error("Listen error", error);
+                console.error("Sync Error:", error);
+                const errDiv = document.createElement('div');
+                errDiv.textContent = "> ERROR: CONNECTION LOST.";
+                errDiv.className = "text-red-500";
+                messageLog.appendChild(errDiv);
             });
         }
 
-        // RENDER
-        function renderMessages(messages) {
-            // Check scroll position to auto-scroll
-            const isScrolledToBottom = messageLog.scrollHeight - messageLog.clientHeight <= messageLog.scrollTop + 50;
-
-            // Clear the log except for system messages we want to keep (or just clear all and let the DB state rule)
-            // For a terminal, re-rendering entirely is fine, but we'll re-add the intro system messages.
-            messageLog.innerHTML = '';
+        function renderMessages(msgs) {
+            // Keep the intro message by finding it or just re-adding it
+            messageLog.innerHTML = `<div class="opacity-50 italic mb-4">> NODE LINK SECURED... WAITING FOR TRANSMISSIONS.</div>`;
             
-            const introDiv = document.createElement('div');
-            introDiv.className = 'opacity-70 italic mb-4';
-            introDiv.innerHTML = `
-                <div>> NODE LINK SECURED...</div>
-                <div>> DECRYPTING TRANSMISSION HISTORY...</div>
-            `;
-            messageLog.appendChild(introDiv);
-
-            messages.forEach(msg => {
-                const div = document.createElement('div');
-                const isMe = msg.sender === username;
-                const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour12: false });
+            msgs.forEach(msg => {
+                const el = document.createElement('div');
+                const time = new Date(msg.timestamp).toLocaleTimeString([], { hour12: false });
                 
-                if (isMe) {
-                    div.innerHTML = `<span class="opacity-50">[${timeStr}]</span> <span class="font-bold">> YOU:</span> ${escapeHtml(msg.text)}`;
+                if (msg.sender === myUsername) {
+                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> YOU:</strong> ${escapeHtml(msg.text)}`;
                 } else {
-                    div.innerHTML = `<span class="opacity-50">[${timeStr}]</span> <span class="font-bold text-white">> ${escapeHtml(msg.sender)}:</span> <span class="text-white opacity-90">${escapeHtml(msg.text)}</span>`;
+                    el.innerHTML = `<span class="opacity-50">[${time}]</span> <strong>> ${escapeHtml(msg.sender)}:</strong> <span class="text-white">${escapeHtml(msg.text)}</span>`;
                 }
                 
-                messageLog.appendChild(div);
+                messageLog.appendChild(el);
             });
-
-            if (isScrolledToBottom) {
-                messageLog.scrollTop = messageLog.scrollHeight;
-            }
-        }
-
-        function appendSystemMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'text-yellow-400 opacity-90';
-            div.textContent = `> SYS_MSG: ${text}`;
-            messageLog.appendChild(div);
+            
+            // Auto scroll to bottom
             messageLog.scrollTop = messageLog.scrollHeight;
         }
 
-        function escapeHtml(unsafe) {
-            if (!unsafe) return '';
-            return unsafe.toString()
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text || !currentUser || !currentRoom) return;
+            
+            chatInput.value = ""; // Clear input UI immediately
+
+            try {
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+                await addDoc(messagesRef, {
+                    roomCode: currentRoom,
+                    sender: myUsername,
+                    text: text,
+                    timestamp: Date.now()
+                });
+            } catch (err) {
+                console.error("Send error:", err);
+            }
+        });
+
+        btnDisconnect.addEventListener('click', () => {
+            if (unsubscribe) {
+                unsubscribe();
+                unsubscribe = null;
+            }
+            currentRoom = "";
+            chatScreen.classList.add('hide');
+            lobbyScreen.classList.remove('hide');
+            joinCodeInput.value = "";
+            checkLobbyInputs();
+        });
+
+        // Helper to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString()
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-        
-        // Focus username on load
-        window.addEventListener('DOMContentLoaded', () => {
-            usernameInput.focus();
-        });
-
-        // Ensure clicking anywhere on the chat focuses the input
-        chatScreen.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') {
-                chatInput.focus();
-            }
-        });
 
     </script>
 </body>
