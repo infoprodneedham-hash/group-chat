@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS_CHAT // SECURE PROTOCOL v4.8</title>
+    <title>NEXUS_CHAT // SECURE PROTOCOL v5.0</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -50,7 +50,7 @@
             pointer-events: none;
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
             background-size: 100% 4px;
-            z-index: 99;
+            z-index: 9999; /* Topmost but pointer-events none */
             opacity: 0.4;
         }
 
@@ -95,21 +95,13 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #00f0ff;
         }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .animate-pulse-glow {
-            animation: pulseGlow 2s infinite;
-        }
     </style>
 </head>
 <body class="cyber-grid min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
     <div class="scanlines"></div>
 
     <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[9000] flex flex-col space-y-2 pointer-events-none"></div>
 
     <!-- LOBBY SCREEN -->
     <div id="lobby-screen" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 max-w-5xl mx-auto w-full relative z-10">
@@ -120,7 +112,7 @@
                 <span id="cloud-status-text">CLOUD SYNC: INITIALIZING...</span>
             </div>
             <h1 class="font-orbitron text-3xl sm:text-5xl font-black tracking-wider text-cyber-cyan neon-text-cyan uppercase">
-                NEXUS_CHAT <span class="text-cyber-magenta font-light">// 4.8</span>
+                NEXUS_CHAT <span class="text-cyber-magenta font-light">// 5.0</span>
             </h1>
             <p class="text-gray-400 text-sm sm:text-base mt-2 font-tech tracking-wider">
                 CRYPTOGRAPHIC ENCRYPTED GAMER SQUAD COMMUNICATIONS
@@ -151,7 +143,7 @@
                     </div>
                 </div>
                 <div class="mt-8 relative z-20">
-                    <button id="create-squad-btn" type="button" class="w-full py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-cyan flex items-center justify-center space-x-2 cursor-pointer pointer-events-auto">
+                    <button id="create-squad-btn" type="button" class="w-full py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-cyan flex items-center justify-center space-x-2">
                         <span>INITIALIZE SQUAD</span>
                         <i class="fa-solid fa-terminal"></i>
                     </button>
@@ -185,7 +177,7 @@
                     </div>
                 </div>
                 <div class="mt-8 relative z-20">
-                    <button id="join-squad-btn" type="button" class="w-full py-3 bg-cyber-magenta/20 hover:bg-cyber-magenta text-cyber-magenta hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-magenta flex items-center justify-center space-x-2 cursor-pointer pointer-events-auto">
+                    <button id="join-squad-btn" type="button" class="w-full py-3 bg-cyber-magenta/20 hover:bg-cyber-magenta text-cyber-magenta hover:text-black font-orbitron font-bold text-sm rounded transition duration-200 neon-glow-magenta flex items-center justify-center space-x-2">
                         <span>ESTABLISH LINK</span>
                         <i class="fa-solid fa-plug"></i>
                     </button>
@@ -198,7 +190,7 @@
             <div>
                 UID: <span class="text-cyber-green" id="client-uuid">AUTHENTICATING...</span> // AUDIO: <span id="audio-status" class="text-cyber-cyan">ENABLED</span>
             </div>
-            <button id="sound-toggle-btn" type="button" class="px-3 py-1 bg-cyber-card border border-cyber-border hover:border-cyber-cyan text-gray-300 rounded flex items-center space-x-2 transition cursor-pointer pointer-events-auto">
+            <button id="sound-toggle-btn" type="button" class="px-3 py-1 bg-cyber-card border border-cyber-border hover:border-cyber-cyan text-gray-300 rounded flex items-center space-x-2 transition">
                 <i class="fa-solid fa-volume-high text-cyber-cyan" id="sound-icon"></i>
                 <span>TOGGLE SOUND FX</span>
             </button>
@@ -218,7 +210,7 @@
                 <div class="flex items-center space-x-2 bg-cyber-darker px-3 py-1.5 rounded border border-cyber-border">
                     <span class="text-xs text-gray-400 font-orbitron">CODE:</span>
                     <span id="display-room-code" class="text-cyber-cyan font-bold tracking-widest text-sm">------</span>
-                    <button id="copy-code-btn" type="button" class="text-gray-400 hover:text-cyber-cyan ml-2 transition cursor-pointer pointer-events-auto" title="Copy Code">
+                    <button id="copy-code-btn" type="button" class="text-gray-400 hover:text-cyber-cyan ml-2 transition" title="Copy Code">
                         <i class="fa-solid fa-copy"></i>
                     </button>
                 </div>
@@ -228,7 +220,7 @@
                 <div class="text-xs font-tech text-gray-400 hidden md:block">
                     OPERATOR: <span id="display-gamer-tag" class="text-cyber-magenta font-bold"></span>
                 </div>
-                <button id="disconnect-btn" type="button" class="px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-orbitron text-xs font-bold rounded border border-red-500/40 transition flex items-center space-x-2 cursor-pointer pointer-events-auto">
+                <button id="disconnect-btn" type="button" class="px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-orbitron text-xs font-bold rounded border border-red-500/40 transition flex items-center space-x-2">
                     <i class="fa-solid fa-power-off"></i>
                     <span>DISCONNECT</span>
                 </button>
@@ -238,13 +230,13 @@
         <!-- Main Chat Body -->
         <div class="flex-1 flex overflow-hidden relative">
             <!-- Sidebar / Squad Roster -->
-            <aside id="sidebar" class="w-64 bg-cyber-card/90 border-r border-cyber-border flex flex-col transition-all duration-300 absolute md:relative z-20 inset-y-0 left-0 -translate-x-full md:translate-x-0">
+            <aside id="sidebar" class="w-64 bg-cyber-card/95 border-r border-cyber-border flex flex-col transition-transform duration-300 absolute md:relative z-40 inset-y-0 left-0 -translate-x-full md:translate-x-0">
                 <div class="p-4 border-b border-cyber-border flex items-center justify-between">
                     <h3 class="font-orbitron text-xs font-bold text-cyber-cyan tracking-wider flex items-center space-x-2">
                         <i class="fa-solid fa-users"></i>
                         <span>SQUAD ROSTER (<span id="roster-count">1</span>)</span>
                     </h3>
-                    <button id="sidebar-close-btn" type="button" class="md:hidden text-gray-400 hover:text-white cursor-pointer pointer-events-auto">
+                    <button id="sidebar-close-btn" type="button" class="md:hidden text-gray-400 hover:text-white">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -257,12 +249,12 @@
             </aside>
 
             <!-- Toggle Sidebar Button for Mobile -->
-            <button id="sidebar-toggle-btn" type="button" class="md:hidden absolute top-4 left-4 z-30 p-2 bg-cyber-card border border-cyber-cyan text-cyber-cyan rounded shadow-lg cursor-pointer pointer-events-auto">
+            <button id="sidebar-toggle-btn" type="button" class="md:hidden absolute top-4 left-4 z-30 p-2 bg-cyber-card border border-cyber-cyan text-cyber-cyan rounded shadow-lg">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
             <!-- Chat Terminal Area -->
-            <main class="flex-1 flex flex-col bg-cyber-bg overflow-hidden">
+            <main class="flex-1 flex flex-col bg-cyber-bg overflow-hidden relative z-20">
                 <!-- Messages Container -->
                 <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 font-tech">
                     <!-- Dynamic messages populated here -->
@@ -278,7 +270,7 @@
                             <input type="text" id="message-input" placeholder="Type transmission command..." autocomplete="off"
                                 class="w-full bg-cyber-darker border border-cyber-border rounded pl-9 pr-4 py-3 text-sm text-gray-100 font-tech focus:outline-none focus:border-cyber-cyan focus:ring-1 focus:ring-cyber-cyan transition">
                         </div>
-                        <button type="submit" class="px-6 py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-xs rounded transition duration-200 neon-glow-cyan flex items-center space-x-2 shrink-0 cursor-pointer pointer-events-auto">
+                        <button type="submit" class="px-6 py-3 bg-cyber-cyan/20 hover:bg-cyber-cyan text-cyber-cyan hover:text-black font-orbitron font-bold text-xs rounded transition duration-200 neon-glow-cyan flex items-center space-x-2 shrink-0">
                             <span>TRANSMIT</span>
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
@@ -289,7 +281,7 @@
     </div>
 
     <!-- COLLAPSIBLE DEBUG TERMINAL (Bottom Right) -->
-    <div class="fixed bottom-2 right-2 z-50 max-w-md w-full bg-cyber-darker border border-cyber-border rounded-lg shadow-2xl overflow-hidden font-tech text-xs pointer-events-auto">
+    <div class="fixed bottom-2 right-2 z-50 max-w-md w-full bg-cyber-darker border border-cyber-border rounded-lg shadow-2xl overflow-hidden font-tech text-xs">
         <div id="debug-header" class="bg-cyber-card px-3 py-2 border-b border-cyber-border flex items-center justify-between cursor-pointer hover:bg-cyber-border/40 transition">
             <div class="flex items-center space-x-2">
                 <span class="w-2 h-2 bg-cyber-green rounded-full animate-pulse"></span>
@@ -297,12 +289,12 @@
             </div>
             <i class="fa-solid fa-chevron-up text-gray-400" id="debug-toggle-icon"></i>
         </div>
-        <div id="debug-body" class="p-3 h-32 overflow-y-auto space-y-1 bg-black/80 text-gray-300 hidden">
+        <div id="debug-body" class="p-3 h-40 overflow-y-auto space-y-1 bg-black/90 text-gray-300 hidden">
             <!-- Dynamic logs -->
         </div>
     </div>
 
-    <!-- AUDIO & DEBUG LOGIC -->
+    <!-- AUDIO & UI HELPER SCRIPT -->
     <script>
         let audioCtx = null;
         let soundEnabled = true;
@@ -316,7 +308,7 @@
                     audioCtx.resume();
                 }
             } catch (e) {
-                console.warn("AudioContext not supported:", e);
+                console.warn("AudioContext error:", e);
             }
         }
 
@@ -329,7 +321,6 @@
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 const now = audioCtx.currentTime;
 
                 if (type === 'click') {
@@ -357,21 +348,11 @@
                     osc.stop(now + 0.08);
                 }
             } catch (e) {
-                console.warn("Audio error:", e);
+                // Ignore audio errors silently in production to avoid console spam
             }
         }
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const statusEl = document.getElementById('audio-status');
-            const iconEl = document.getElementById('sound-icon');
-            if (statusEl) statusEl.textContent = soundEnabled ? 'ENABLED' : 'MUTED';
-            if (iconEl) iconEl.className = soundEnabled ? 'fa-solid fa-volume-high text-cyber-cyan' : 'fa-solid fa-volume-xmark text-red-400';
-            logDebug('INFO', `Sound FX toggled: ${soundEnabled}`);
-            playSound('click');
-        }
-
-        function logDebug(level, text) {
+        window.logDebug = function(level, text) {
             const body = document.getElementById('debug-body');
             if (!body) return;
             const timeStr = new Date().toLocaleTimeString();
@@ -381,27 +362,14 @@
             body.appendChild(div);
             body.scrollTop = body.scrollHeight;
             console.log(`[${level}] ${text}`);
-        }
+        };
 
-        function toggleDebugTerminal() {
-            const body = document.getElementById('debug-body');
-            const icon = document.getElementById('debug-toggle-icon');
-            if (!body || !icon) return;
-            if (body.classList.contains('hidden')) {
-                body.classList.remove('hidden');
-                icon.className = 'fa-solid fa-chevron-down text-gray-400';
-            } else {
-                body.classList.add('hidden');
-                icon.className = 'fa-solid fa-chevron-up text-gray-400';
-            }
-        }
-
-        function showToast(title, message, type = 'success') {
+        window.showToast = function(title, message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
             const toast = document.createElement('div');
             const borderColor = type === 'error' ? 'border-red-500 text-red-400' : 'border-cyber-cyan text-cyber-cyan';
-            toast.className = `bg-cyber-card ${borderColor} border px-4 py-3 rounded-lg shadow-lg font-tech text-xs max-w-sm w-full pointer-events-auto transition transform translate-y-0 opacity-100 flex items-start space-x-3`;
+            toast.className = `bg-cyber-card ${borderColor} border px-4 py-3 rounded-lg shadow-lg font-tech text-xs max-w-sm w-full pointer-events-auto transition-opacity duration-300 flex items-start space-x-3`;
             toast.innerHTML = `
                 <i class="fa-solid ${type === 'error' ? 'fa-triangle-exclamation text-red-500' : 'fa-circle-check text-cyber-cyan'} mt-0.5"></i>
                 <div class="flex-1">
@@ -413,10 +381,10 @@
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 3500);
-        }
+            }, 4000);
+        };
 
-        function updateCloudStatus(statusText, textColorClass, dotColorClass) {
+        window.updateCloudStatus = function(statusText, textColorClass, dotColorClass) {
             const badge = document.getElementById('cloud-status-badge');
             const dot = document.getElementById('cloud-status-dot');
             const text = document.getElementById('cloud-status-text');
@@ -424,40 +392,73 @@
             badge.className = `inline-flex items-center space-x-2 px-3 py-1 mb-3 text-xs font-bold tracking-widest ${textColorClass} bg-cyber-card rounded border border-cyber-border`;
             dot.className = `w-2 h-2 ${dotColorClass} rounded-full animate-ping`;
             text.textContent = statusText;
-        }
+        };
     </script>
 
-    <!-- FIREBASE CLOUD & APP LOGIC (Rule 1, 2, 3 Compliant) -->
+    <!-- FIREBASE MODULE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // State Variables
         let db = null;
         let auth = null;
         let currentUser = null;
         let unsubscribeMessages = null;
         let unsubscribeRoom = null;
         let isAuthReady = false;
+        
+        let currentRoomCode = null;
+        let currentGamerTag = '';
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat-app-v4';
+        // Extract globals robustly
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nexus-chat-app-v5';
+        let firebaseConfig = null;
 
+        // --- PHASE 1: CONFIGURATION PARSING ---
+        window.logDebug('INFO', 'Starting Firebase Initialization Phase 1...');
         try {
-            updateCloudStatus('INITIALIZING CLOUD...', 'text-yellow-400', 'bg-yellow-400');
-            
-            // Strictly enforce real Firebase config (No standalone fallback)
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            if (typeof __firebase_config !== 'undefined') {
+                if (typeof __firebase_config === 'string') {
+                    window.logDebug('INFO', 'Parsing injected string __firebase_config...');
+                    firebaseConfig = JSON.parse(__firebase_config);
+                } else if (typeof __firebase_config === 'object') {
+                    window.logDebug('INFO', 'Using injected object __firebase_config...');
+                    firebaseConfig = __firebase_config;
+                }
+            } else {
+                throw new Error("__firebase_config is undefined in this environment.");
+            }
+
+            if (!firebaseConfig || !firebaseConfig.projectId) {
+                throw new Error("Parsed config is invalid (missing projectId).");
+            }
+            window.logDebug('SUCCESS', 'Firebase config loaded successfully.');
+        } catch (e) {
+            window.logDebug('ERROR', `Config parsing failed: ${e.message}`);
+            window.updateCloudStatus('CONFIG ERROR', 'text-red-400', 'bg-red-400');
+            window.showToast('SYSTEM HALT', 'Cloud config missing or invalid.', 'error');
+            // Stop execution if config is broken
+            throw e; 
+        }
+
+        // --- PHASE 2: FIREBASE INITIALIZATION & AUTH ---
+        try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            window.logDebug('SUCCESS', 'Firebase App & Firestore instantiated.');
 
-            // Rule 3: Explicitly execute Authentication BEFORE any DB operations
+            // Rule 3: Explicit Authentication FIRST
             const authenticate = async () => {
                 try {
-                    updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400');
+                    window.updateCloudStatus('AUTHENTICATING...', 'text-yellow-400', 'bg-yellow-400');
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        window.logDebug('INFO', 'Attempting custom token auth...');
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
+                        window.logDebug('INFO', 'Falling back to anonymous auth...');
                         await signInAnonymously(auth);
                     }
                     
@@ -465,20 +466,19 @@
                     isAuthReady = true;
                     
                     const uuidEl = document.getElementById('client-uuid');
-                    if (uuidEl) uuidEl.textContent = currentUser ? currentUser.uid : 'ONLINE';
+                    if (uuidEl) uuidEl.textContent = currentUser ? currentUser.uid.substring(0,8) + '...' : 'ONLINE';
                     
-                    updateCloudStatus('CLOUD CONNECTED (FIRESTORE)', 'text-cyber-green', 'bg-cyber-green');
-                    logDebug('SUCCESS', `Firebase authenticated. UID: ${currentUser?.uid}`);
+                    window.updateCloudStatus('CLOUD CONNECTED (FIRESTORE)', 'text-cyber-green', 'bg-cyber-green');
+                    window.logDebug('SUCCESS', `Authenticated! UID: ${currentUser?.uid}`);
                 } catch (err) {
-                    updateCloudStatus('CLOUD AUTH ERROR', 'text-red-400', 'bg-red-400');
-                    logDebug('ERROR', `Firebase authentication failed: ${err.message}`);
+                    window.updateCloudStatus('CLOUD AUTH ERROR', 'text-red-400', 'bg-red-400');
+                    window.logDebug('ERROR', `Auth failed: ${err.message}`);
+                    window.showToast('AUTH FAILED', err.message, 'error');
                 }
             };
 
-            // Trigger explicit auth immediately
             authenticate();
 
-            // Track state changes to correctly handle session expiry (does NOT replace explicit login above)
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
@@ -486,81 +486,67 @@
                 } else {
                     currentUser = null;
                     isAuthReady = false;
-                    updateCloudStatus('CLOUD DISCONNECTED', 'text-red-400', 'bg-red-400');
+                    window.updateCloudStatus('CLOUD DISCONNECTED', 'text-red-400', 'bg-red-400');
                 }
             });
 
         } catch (e) {
-            updateCloudStatus('FIREBASE CONFIG ERROR', 'text-red-400', 'bg-red-400');
-            logDebug('ERROR', `Cloud initialization failed (Ensure DB config exists): ${e.message}`);
+            window.updateCloudStatus('FIREBASE INIT ERROR', 'text-red-400', 'bg-red-400');
+            window.logDebug('ERROR', `Firebase init failed: ${e.message}`);
         }
 
-        let currentRoomCode = null;
-        let currentGamerTag = '';
-
+        // --- PHASE 3: APP LOGIC & FIRESTORE OPERATIONS ---
+        
         function generateRoomCode() {
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        window.handleCreateSquad = async function(e) {
+        async function handleCreateSquad(e) {
             if (e) e.preventDefault();
-            initAudio();
             playSound('click');
 
             const tagInput = document.getElementById('create-gamer-tag');
             const gamerTag = tagInput ? tagInput.value.trim() : '';
 
-            if (!gamerTag) {
-                showToast('ACCESS DENIED', 'Please enter a valid Gamer Tag.', 'error');
-                logDebug('ERROR', 'Create squad failed: Missing Gamer Tag');
-                return;
-            }
-
-            if (!isAuthReady || !auth || !auth.currentUser) {
-                showToast('CLOUD SYNC ERROR', 'Waiting for cloud authentication...', 'error');
-                logDebug('ERROR', 'Create squad blocked: Auth not ready');
-                return;
-            }
+            if (!gamerTag) return window.showToast('DENIED', 'Gamer Tag required.', 'error');
+            if (!isAuthReady || !currentUser) return window.showToast('SYNC ERROR', 'Wait for cloud auth...', 'error');
 
             currentGamerTag = gamerTag;
             localStorage.setItem('nexus_gamer_tag', gamerTag);
-            const roomCode = generateRoomCode();
-            currentRoomCode = roomCode;
+            currentRoomCode = generateRoomCode();
 
-            logDebug('INFO', `Creating room ${roomCode} in Firestore...`);
+            window.logDebug('INFO', `Creating room ${currentRoomCode}...`);
 
             try {
-                // Rule 1: Public data path /artifacts/{appId}/public/data/{collectionName}
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', roomCode);
+                // Rule 1: Strict paths
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', currentRoomCode);
                 await setDoc(roomRef, {
-                    roomCode: roomCode,
+                    roomCode: currentRoomCode,
                     createdBy: gamerTag,
                     participants: [gamerTag],
                     createdAt: Date.now()
                 });
 
-                // Add initial system message
                 const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
                 await addDoc(messagesRef, {
-                    roomCode: roomCode,
+                    roomCode: currentRoomCode,
                     sender: 'SYSTEM',
-                    text: `${gamerTag} initialized squad ${roomCode}.`,
+                    text: `${gamerTag} initialized squad frequency ${currentRoomCode}.`,
                     timestamp: Date.now(),
                     type: 'system'
                 });
 
-                showToast('SQUAD INITIALIZED', `Room Code: ${roomCode}`);
+                window.showToast('INITIALIZED', `Squad Code: ${currentRoomCode}`);
                 playSound('success');
-                enterChatScreen(roomCode, gamerTag);
+                enterChatScreen(currentRoomCode, gamerTag);
             } catch (err) {
-                logDebug('ERROR', `Failed to create room in Firestore: ${err.message}`);
-                showToast('SYNC ERROR', `Could not create room: ${err.message}`, 'error');
+                window.logDebug('ERROR', `Create room failed: ${err.message}`);
+                window.showToast('SYNC ERROR', err.message, 'error');
             }
-        };
+        }
 
-        window.handleJoinSquad = async function(e) {
+        async function handleJoinSquad(e) {
             if (e) e.preventDefault();
-            initAudio();
             playSound('click');
 
             const tagInput = document.getElementById('join-gamer-tag');
@@ -568,42 +554,26 @@
             const gamerTag = tagInput ? tagInput.value.trim() : '';
             const roomCode = codeInput ? codeInput.value.trim() : '';
 
-            if (!gamerTag) {
-                showToast('ACCESS DENIED', 'Please enter your Gamer Tag.', 'error');
-                logDebug('ERROR', 'Join squad failed: Missing Gamer Tag');
-                return;
-            }
-
-            if (!roomCode || roomCode.length !== 6) {
-                showToast('ACCESS DENIED', 'Please enter a valid 6-digit cryptographic room code.', 'error');
-                logDebug('ERROR', 'Join squad failed: Invalid room code format');
-                return;
-            }
-
-            if (!isAuthReady || !auth || !auth.currentUser) {
-                showToast('CLOUD SYNC ERROR', 'Waiting for cloud authentication...', 'error');
-                logDebug('ERROR', 'Join squad blocked: Auth not ready');
-                return;
-            }
+            if (!gamerTag) return window.showToast('DENIED', 'Gamer Tag required.', 'error');
+            if (!roomCode || roomCode.length !== 6) return window.showToast('DENIED', 'Valid 6-digit code required.', 'error');
+            if (!isAuthReady || !currentUser) return window.showToast('SYNC ERROR', 'Wait for cloud auth...', 'error');
 
             currentGamerTag = gamerTag;
             localStorage.setItem('nexus_gamer_tag', gamerTag);
             currentRoomCode = roomCode;
 
-            logDebug('INFO', `Attempting to join room ${roomCode} in Firestore...`);
+            window.logDebug('INFO', `Joining room ${roomCode}...`);
 
             try {
                 const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', roomCode);
                 const roomSnap = await getDoc(roomRef);
 
                 if (!roomSnap.exists()) {
-                    showToast('FREQUENCY NOT FOUND', `Room ${roomCode} does not exist on cloud.`, 'error');
-                    logDebug('ERROR', `Room ${roomCode} not found in Firestore`);
-                    return;
+                    window.logDebug('ERROR', `Room ${roomCode} not found.`);
+                    return window.showToast('404', `Frequency ${roomCode} offline.`, 'error');
                 }
 
-                const roomData = roomSnap.data();
-                let participants = roomData.participants || [];
+                let participants = roomSnap.data().participants || [];
                 if (!participants.includes(gamerTag)) {
                     participants.push(gamerTag);
                     await updateDoc(roomRef, { participants });
@@ -613,98 +583,68 @@
                 await addDoc(messagesRef, {
                     roomCode: roomCode,
                     sender: 'SYSTEM',
-                    text: `${gamerTag} linked to the secure frequency.`,
+                    text: `${gamerTag} linked to frequency.`,
                     timestamp: Date.now(),
                     type: 'system'
                 });
 
-                showToast('LINK ESTABLISHED', `Connected to Room: ${roomCode}`);
+                window.showToast('LINKED', `Connected to: ${roomCode}`);
                 playSound('success');
                 enterChatScreen(roomCode, gamerTag);
             } catch (err) {
-                logDebug('ERROR', `Failed to join room: ${err.message}`);
-                showToast('SYNC ERROR', `Could not join room: ${err.message}`, 'error');
+                window.logDebug('ERROR', `Join failed: ${err.message}`);
+                window.showToast('SYNC ERROR', err.message, 'error');
             }
-        };
+        }
 
         function enterChatScreen(roomCode, gamerTag) {
-            const lobby = document.getElementById('lobby-screen');
-            const chat = document.getElementById('chat-screen');
-            const codeDisplay = document.getElementById('display-room-code');
-            const tagDisplay = document.getElementById('display-gamer-tag');
-
-            if (lobby) lobby.classList.add('hidden');
-            if (chat) chat.classList.remove('hidden');
-            if (codeDisplay) codeDisplay.textContent = roomCode;
-            if (tagDisplay) tagDisplay.textContent = gamerTag;
-
+            document.getElementById('lobby-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            document.getElementById('display-room-code').textContent = roomCode;
+            document.getElementById('display-gamer-tag').textContent = gamerTag;
             startCloudListeners(roomCode);
         }
 
         function startCloudListeners(roomCode) {
-            const container = document.getElementById('chat-messages');
-            if (container) container.innerHTML = '';
+            document.getElementById('chat-messages').innerHTML = '';
 
-            if (!db) {
-                logDebug('ERROR', 'Firestore database instance is null.');
-                return;
-            }
-
-            // 1. Listen to Room Document for Roster updates across devices
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'nexus_rooms', roomCode);
             unsubscribeRoom = onSnapshot(roomRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    renderRoster(data.participants || [currentGamerTag]);
+                    renderRoster(docSnap.data().participants || [currentGamerTag]);
                 }
-            }, (error) => {
-                logDebug('ERROR', `Room sync error: ${error.message}`);
-            });
+            }, (err) => window.logDebug('ERROR', `Room sync: ${err.message}`));
 
-            // 2. Listen to Messages Collection (Rule 2: No complex queries, fetch all and filter in JS memory)
+            // Rule 2: Fetch all, filter in JS memory
             const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
             unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
                 const messages = [];
                 snapshot.forEach(docSnap => {
                     const msg = docSnap.data();
-                    // Filter in JS memory by roomCode
                     if (msg.roomCode === roomCode) {
                         messages.push(msg);
                     }
                 });
 
-                // Sort by timestamp ascending
                 messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
-                const msgContainer = document.getElementById('chat-messages');
-                if (msgContainer) {
-                    msgContainer.innerHTML = '';
-                    messages.forEach(msg => {
-                        appendMessageToUI(msg, false);
-                    });
-                    msgContainer.scrollTop = msgContainer.scrollHeight;
-                }
-            }, (error) => {
-                logDebug('ERROR', `Messages sync error: ${error.message}`);
-            });
-
-            logDebug('SUCCESS', `Cloud listeners active for room ${roomCode}`);
+                
+                const container = document.getElementById('chat-messages');
+                container.innerHTML = '';
+                messages.forEach(msg => appendMessageToUI(msg));
+                container.scrollTop = container.scrollHeight;
+            }, (err) => window.logDebug('ERROR', `Messages sync: ${err.message}`));
         }
 
-        window.handleSendMessage = async function(e) {
+        async function handleSendMessage(e) {
             if (e) e.preventDefault();
-            playSound('click');
             const input = document.getElementById('message-input');
-            const text = input ? input.value.trim() : '';
+            const text = input.value.trim();
 
             if (!text || !currentRoomCode) return;
-            if (!isAuthReady || !auth || !auth.currentUser) {
-                showToast('SYNC ERROR', 'Not connected to cloud.', 'error');
-                return;
-            }
+            if (!isAuthReady || !currentUser) return window.showToast('ERROR', 'Cloud disconnected', 'error');
 
             input.value = '';
-
+            
             try {
                 const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
                 await addDoc(messagesRef, {
@@ -715,55 +655,44 @@
                     type: 'chat'
                 });
                 playSound('beep');
-                logDebug('SUCCESS', `Transmission sent: "${text}"`);
             } catch (err) {
-                logDebug('ERROR', `Failed to send message: ${err.message}`);
-                showToast('TRANSMISSION FAILED', err.message, 'error');
+                window.logDebug('ERROR', `Send failed: ${err.message}`);
+                window.showToast('FAIL', err.message, 'error');
             }
-        };
+        }
 
         function renderRoster(participants) {
-            const rosterList = document.getElementById('roster-list');
-            const rosterCount = document.getElementById('roster-count');
-            if (!rosterList || !rosterCount) return;
-            rosterList.innerHTML = '';
-            rosterCount.textContent = participants.length;
+            const list = document.getElementById('roster-list');
+            document.getElementById('roster-count').textContent = participants.length;
+            list.innerHTML = '';
 
             participants.forEach(tag => {
-                const item = document.createElement('div');
                 const isSelf = tag === currentGamerTag;
-                item.className = 'flex items-center justify-between p-2 rounded bg-cyber-darker border border-cyber-border';
-                item.innerHTML = `
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 rounded bg-cyber-darker border border-cyber-border';
+                div.innerHTML = `
                     <div class="flex items-center space-x-2 truncate">
                         <span class="w-2 h-2 bg-cyber-green rounded-full"></span>
-                        <span class="truncate text-xs ${isSelf ? 'text-cyber-cyan font-bold' : 'text-gray-300'}">${tag} ${isSelf ? '(YOU)' : ''}</span>
+                        <span class="truncate text-xs ${isSelf ? 'text-cyber-cyan font-bold' : 'text-gray-300'}">${escapeHtml(tag)} ${isSelf ? '(YOU)' : ''}</span>
                     </div>
-                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyber-green/10 text-cyber-green border border-cyber-green/30 font-orbitron">CLOUD</span>
                 `;
-                rosterList.appendChild(item);
+                list.appendChild(div);
             });
         }
 
-        function appendMessageToUI(msg, shouldScroll = true) {
+        function appendMessageToUI(msg) {
             const container = document.getElementById('chat-messages');
-            if (!container) return;
-
             const isSystem = msg.type === 'system' || msg.sender === 'SYSTEM';
             const isMe = msg.sender === currentGamerTag;
             const timeStr = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-            const msgDiv = document.createElement('div');
+            const div = document.createElement('div');
             if (isSystem) {
-                msgDiv.className = 'flex justify-center my-2';
-                msgDiv.innerHTML = `
-                    <div class="bg-cyber-darker border border-cyber-border px-4 py-1.5 rounded-full text-xs text-cyber-green font-tech flex items-center space-x-2">
-                        <i class="fa-solid fa-circle-info text-[10px]"></i>
-                        <span>[${timeStr}] ${escapeHtml(msg.text)}</span>
-                    </div>
-                `;
+                div.className = 'flex justify-center my-2';
+                div.innerHTML = `<div class="bg-cyber-darker border border-cyber-border px-4 py-1.5 rounded-full text-[11px] text-cyber-green font-tech">[${timeStr}] ${escapeHtml(msg.text)}</div>`;
             } else {
-                msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-3`;
-                msgDiv.innerHTML = `
+                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-3`;
+                div.innerHTML = `
                     <div class="flex items-center space-x-2 mb-1">
                         <span class="text-xs font-orbitron font-bold ${isMe ? 'text-cyber-cyan' : 'text-cyber-magenta'}">${escapeHtml(msg.sender)}</span>
                         <span class="text-[10px] text-gray-500">${timeStr}</span>
@@ -773,26 +702,10 @@
                     </div>
                 `;
             }
-            container.appendChild(msgDiv);
-            if (shouldScroll) {
-                container.scrollTop = container.scrollHeight;
-            }
+            container.appendChild(div);
         }
 
-        window.copyRoomCode = function() {
-            playSound('click');
-            if (!currentRoomCode) return;
-            const dummy = document.createElement('textarea');
-            document.body.appendChild(dummy);
-            dummy.value = currentRoomCode;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            showToast('FREQ COPIED', `Room code ${currentRoomCode} copied to clipboard.`);
-            logDebug('INFO', `Room code ${currentRoomCode} copied to clipboard.`);
-        };
-
-        window.leaveRoom = async function() {
+        async function leaveRoom() {
             playSound('click');
             if (currentRoomCode && currentGamerTag && db) {
                 try {
@@ -803,17 +716,10 @@
                         participants = participants.filter(t => t !== currentGamerTag);
                         await updateDoc(roomRef, { participants });
                     }
-
                     const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'nexus_messages');
-                    await addDoc(messagesRef, {
-                        roomCode: currentRoomCode,
-                        sender: 'SYSTEM',
-                        text: `${currentGamerTag} disconnected from the frequency.`,
-                        timestamp: Date.now(),
-                        type: 'system'
-                    });
+                    await addDoc(messagesRef, { roomCode: currentRoomCode, sender: 'SYSTEM', text: `${currentGamerTag} disconnected.`, timestamp: Date.now(), type: 'system' });
                 } catch (e) {
-                    logDebug('ERROR', `Disconnect cleanup error: ${e.message}`);
+                    window.logDebug('ERROR', `Disconnect error: ${e.message}`);
                 }
             }
 
@@ -821,64 +727,69 @@
             if (unsubscribeRoom) unsubscribeRoom();
 
             currentRoomCode = null;
-            const lobby = document.getElementById('lobby-screen');
-            const chat = document.getElementById('chat-screen');
-            if (lobby) lobby.classList.remove('hidden');
-            if (chat) chat.classList.add('hidden');
-            logDebug('INFO', 'Disconnected from room.');
-            showToast('DISCONNECTED', 'Returned to lobby screen.');
-        };
-
-        function toggleSidebar() {
-            playSound('click');
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) sidebar.classList.toggle('-translate-x-full');
+            document.getElementById('lobby-screen').classList.remove('hidden');
+            document.getElementById('chat-screen').classList.add('hidden');
+            window.showToast('DISCONNECTED', 'Returned to lobby.');
         }
 
         function escapeHtml(text) {
-            if (!text) return '';
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+            return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
         }
 
-        // --- DOM INITIALIZATION & EVENT BINDINGS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            logDebug('SUCCESS', 'DOM fully loaded and event handlers bound.');
-
+        // --- PHASE 4: EVENT BINDINGS ---
+        // We use a setup function to ensure we attach events correctly regardless of module deferral timings
+        function setupEventListeners() {
+            window.logDebug('INFO', 'Binding DOM events...');
+            
             const savedTag = localStorage.getItem('nexus_gamer_tag');
             if (savedTag) {
-                const createTagInput = document.getElementById('create-gamer-tag');
-                const joinTagInput = document.getElementById('join-gamer-tag');
-                if (createTagInput) createTagInput.value = savedTag;
-                if (joinTagInput) joinTagInput.value = savedTag;
+                document.getElementById('create-gamer-tag').value = savedTag;
+                document.getElementById('join-gamer-tag').value = savedTag;
             }
 
-            const createBtn = document.getElementById('create-squad-btn');
-            if (createBtn) createBtn.addEventListener('click', window.handleCreateSquad);
+            document.getElementById('create-squad-btn')?.addEventListener('click', handleCreateSquad);
+            document.getElementById('join-squad-btn')?.addEventListener('click', handleJoinSquad);
+            document.getElementById('chat-form')?.addEventListener('submit', handleSendMessage);
+            document.getElementById('disconnect-btn')?.addEventListener('click', leaveRoom);
+            
+            document.getElementById('copy-code-btn')?.addEventListener('click', () => {
+                playSound('click');
+                if (!currentRoomCode) return;
+                const dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = currentRoomCode;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                window.showToast('COPIED', 'Code copied to clipboard.');
+            });
 
-            const joinBtn = document.getElementById('join-squad-btn');
-            if (joinBtn) joinBtn.addEventListener('click', window.handleJoinSquad);
+            document.getElementById('sound-toggle-btn')?.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('audio-status').textContent = soundEnabled ? 'ENABLED' : 'MUTED';
+                document.getElementById('sound-icon').className = soundEnabled ? 'fa-solid fa-volume-high text-cyber-cyan' : 'fa-solid fa-volume-xmark text-red-400';
+                playSound('click');
+            });
 
-            const soundBtn = document.getElementById('sound-toggle-btn');
-            if (soundBtn) soundBtn.addEventListener('click', toggleSound);
+            const toggleSidebar = () => { playSound('click'); document.getElementById('sidebar')?.classList.toggle('-translate-x-full'); };
+            document.getElementById('sidebar-toggle-btn')?.addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-close-btn')?.addEventListener('click', toggleSidebar);
 
-            const copyBtn = document.getElementById('copy-code-btn');
-            if (copyBtn) copyBtn.addEventListener('click', window.copyRoomCode);
+            document.getElementById('debug-header')?.addEventListener('click', () => {
+                const body = document.getElementById('debug-body');
+                const icon = document.getElementById('debug-toggle-icon');
+                body.classList.toggle('hidden');
+                icon.className = body.classList.contains('hidden') ? 'fa-solid fa-chevron-up text-gray-400' : 'fa-solid fa-chevron-down text-gray-400';
+            });
+            window.logDebug('SUCCESS', 'All DOM events bound successfully.');
+        }
 
-            const disconnectBtn = document.getElementById('disconnect-btn');
-            if (disconnectBtn) disconnectBtn.addEventListener('click', window.leaveRoom);
-
-            const sidebarToggle = document.getElementById('sidebar-toggle-btn');
-            const sidebarClose = document.getElementById('sidebar-close-btn');
-            if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
-            if (sidebarClose) sidebarClose.addEventListener('click', toggleSidebar);
-
-            const chatForm = document.getElementById('chat-form');
-            if (chatForm) chatForm.addEventListener('submit', window.handleSendMessage);
-
-            const debugHeader = document.getElementById('debug-header');
-            if (debugHeader) debugHeader.addEventListener('click', toggleDebugTerminal);
-        });
+        // Guarantee execution when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupEventListeners);
+        } else {
+            setupEventListeners();
+        }
     </script>
 </body>
 </html>
